@@ -1459,7 +1459,7 @@ body {
 }
 
 .add-to-cart-btn, .buy-now-btn {
-    flex: 1;
+    flex: 0;
     padding: 0.8rem;
     border: none;
     border-radius: 8px;
