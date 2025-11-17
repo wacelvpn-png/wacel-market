@@ -115,3 +115,22 @@ window.firebaseAuth = auth;
 
 console.log("تم تحميل إعدادات Firebase بنجاح للمتجر الإلكتروني");
 [file content end]
+
+
+
+// في نهاية firebase-config.js
+console.log("🔍 التحقق من إعدادات Firebase...");
+
+// اختبار اتصال Firebase
+if (window.firebaseDb) {
+    console.log("✅ Firebase متصل");
+    
+    // اختبار بسيط للاتصال
+    firebaseDb.collection("test").get().then(() => {
+        console.log("✅ اتصال Firebase يعمل بشكل صحيح");
+    }).catch(error => {
+        console.error("❌ خطأ في اتصال Firebase:", error);
+    });
+} else {
+    console.log("⚠️  استخدام وضع الاختبار (بدون Firebase)");
+}
