@@ -1,7 +1,5 @@
-[file name]: admin.js
-[file content begin]
-// js/admin.js - الإصدار المعدل لإدارة المنتجات
-console.log("تحميل لوحة التحكم للمنتجات...");
+// js/admin.js - الإصدار المصحح بالكامل
+console.log("🔄 تحميل لوحة التحكم للمنتجات...");
 
 let products = [];
 let currentEditingProduct = null;
@@ -26,6 +24,8 @@ function formatDateTime(dateString) {
 
 // فتح نافذة التعديل
 function openEditModal(product) {
+    console.log("📝 فتح نافذة تعديل المنتج:", product.name);
+    
     currentEditingProduct = product;
     
     // ملء النموذج ببيانات المنتج الحالية
@@ -59,73 +59,96 @@ function openEditModal(product) {
 function closeEditModal() {
     document.getElementById('editProductModal').style.display = 'none';
     currentEditingProduct = null;
+    console.log("📝 تم إغلاق نافذة التعديل");
 }
 
 // تحديث المنتج
 async function updateProduct(e) {
     e.preventDefault();
+    console.log("🔄 بدء تحديث المنتج...");
     
     const loadingModal = document.getElementById('loadingModal');
     if (loadingModal) loadingModal.style.display = 'block';
     
-    const productId = document.getElementById('editProductId').value;
-    const productData = {
-        name: document.getElementById('editProductName').value.trim(),
-        description: document.getElementById('editProductDescription').value.trim(),
-        price: parseFloat(document.getElementById('editProductPrice').value),
-        originalPrice: document.getElementById('editProductOriginalPrice').value ? parseFloat(document.getElementById('editProductOriginalPrice').value) : null,
-        stock: parseInt(document.getElementById('editProductStock').value),
-        category: document.getElementById('editProductCategory').value,
-        brand: document.getElementById('editProductBrand').value.trim() || null,
-        discount: document.getElementById('editProductDiscount').value ? parseInt(document.getElementById('editProductDiscount').value) : null,
-        featured: document.getElementById('editProductFeatured').checked,
-        trending: document.getElementById('editProductTrending').checked,
-        updatedAt: new Date().toISOString()
-    };
-
-    // معالجة رابط الصورة
-    const imageURL = document.getElementById('editProductImageURL').value.trim();
-    if (imageURL) {
-        productData.images = [imageURL];
-    }
-
-    // معالجة المواصفات
-    const specificationsText = document.getElementById('editProductSpecifications').value.trim();
-    if (specificationsText) {
-        const specifications = {};
-        const lines = specificationsText.split('\n');
-        lines.forEach(line => {
-            const [key, value] = line.split(':').map(part => part.trim());
-            if (key && value) {
-                specifications[key] = value;
-            }
-        });
-        productData.specifications = specifications;
-    }
-
     try {
+        const productId = document.getElementById('editProductId').value;
+        const productData = {
+            name: document.getElementById('editProductName').value.trim(),
+            description: document.getElementById('editProductDescription').value.trim(),
+            price: parseFloat(document.getElementById('editProductPrice').value),
+            stock: parseInt(document.getElementById('editProductStock').value),
+            category: document.getElementById('editProductCategory').value,
+            featured: document.getElementById('editProductFeatured').checked,
+            trending: document.getElementById('editProductTrending').checked,
+            updatedAt: new Date().toISOString()
+        };
+
+        // الحقول الاختيارية
+        const originalPrice = document.getElementById('editProductOriginalPrice').value;
+        const brand = document.getElementById('editProductBrand').value.trim();
+        const discount = document.getElementById('editProductDiscount').value;
+        const imageURL = document.getElementById('editProductImageURL').value.trim();
+        const specificationsText = document.getElementById('editProductSpecifications').value.trim();
+
+        if (originalPrice) productData.originalPrice = parseFloat(originalPrice);
+        if (brand) productData.brand = brand;
+        if (discount) productData.discount = parseInt(discount);
+        if (imageURL) productData.images = [imageURL];
+
+        // معالجة المواصفات
+        if (specificationsText) {
+            const specifications = {};
+            const lines = specificationsText.split('\n');
+            lines.forEach(line => {
+                const [key, value] = line.split(':').map(part => part.trim());
+                if (key && value) {
+                    specifications[key] = value;
+                }
+            });
+            productData.specifications = specifications;
+        }
+
+        console.log("📦 بيانات التحديث:", productData);
+
+        // التحقق من البيانات
+        if (!productData.name || !productData.description || isNaN(productData.price) || isNaN(productData.stock) || !productData.category) {
+            throw new Error('البيانات غير مكتملة أو غير صالحة');
+        }
+
+        let updateSuccess = false;
+
         // تحديث المنتج في Firebase
-        if (window.firebaseDb) {
+        if (window.firebaseDb && typeof firebaseDb.collection === 'function') {
+            console.log("🔥 جاري تحديث المنتج في Firebase...");
             await firebaseDb.doc(`products/${productId}`).update(productData);
-            showMessage('تم تحديث المنتج بنجاح!', 'success');
+            updateSuccess = true;
+            console.log("✅ تم تحديث المنتج في Firebase بنجاح!");
         } else {
             // تحديث محلي للبيانات التجريبية
+            console.log("💾 جاري تحديث المنتج محلياً...");
             const productIndex = products.findIndex(product => product.id === productId);
             if (productIndex !== -1) {
                 products[productIndex] = { ...products[productIndex], ...productData };
-                showMessage('تم تحديث المنتج بنجاح (محلي)!', 'success');
+                updateSuccess = true;
+                console.log("✅ تم تحديث المنتج محلياً بنجاح!");
             }
         }
         
-        // إغلاق النافذة
-        closeEditModal();
-        
-        // إعادة تحميل القائمة
-        await loadAdminProducts();
+        if (updateSuccess) {
+            showMessage('✅ تم تحديث المنتج بنجاح!', 'success');
+            
+            // إغلاق النافذة بعد نجاح التحديث
+            setTimeout(() => {
+                closeEditModal();
+                loadAdminProducts();
+            }, 1000);
+        } else {
+            throw new Error('فشل في تحديث المنتج');
+        }
 
     } catch (error) {
-        console.error("Error updating product:", error);
-        showMessage('خطأ في تحديث المنتج: ' + error.message, 'error');
+        console.error("❌ خطأ في تحديث المنتج:", error);
+        showMessage('❌ خطأ في تحديث المنتج: ' + error.message, 'error');
     } finally {
         if (loadingModal) loadingModal.style.display = 'none';
     }
@@ -135,6 +158,8 @@ async function updateProduct(e) {
 function searchAdminProducts() {
     const searchInput = document.getElementById('adminSearchInput');
     searchTerm = searchInput.value.toLowerCase().trim();
+    
+    console.log("🔍 البحث عن:", searchTerm);
     
     // إظهار زر إعادة الضبط إذا كان هناك بحث
     const clearSearchBtn = document.querySelector('.clear-search-btn');
@@ -166,11 +191,11 @@ function clearAdminSearch() {
     
     displayAdminProducts();
     updateSearchStats();
+    console.log("🧹 تم مسح البحث");
 }
 
 // تحديث إحصائيات البحث
 function updateSearchStats() {
-    const searchResultsCount = document.getElementById('searchResultsCount');
     const productsCount = document.getElementById('productsCount');
     
     if (searchTerm) {
@@ -180,10 +205,8 @@ function updateSearchStats() {
             getCategoryName(product.category).toLowerCase().includes(searchTerm) ||
             (product.brand && product.brand.toLowerCase().includes(searchTerm))
         );
-        if (searchResultsCount) searchResultsCount.textContent = filteredProducts.length;
         if (productsCount) productsCount.textContent = `(${filteredProducts.length} منتج - نتائج البحث)`;
     } else {
-        if (searchResultsCount) searchResultsCount.textContent = '-';
         if (productsCount) productsCount.textContent = `(${products.length} منتج)`;
     }
 }
@@ -191,91 +214,36 @@ function updateSearchStats() {
 // تحميل المنتجات مع الترتيب الجديد
 async function loadAdminProducts() {
     try {
-        console.log("بدء تحميل المنتجات...");
+        console.log("🔄 بدء تحميل المنتجات...");
         
+        const adminProductsList = document.getElementById('adminProductsList');
+        if (adminProductsList) {
+            adminProductsList.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i><p>جاري تحميل المنتجات...</p></div>';
+        }
+
         // محاولة التحميل من Firebase
-        if (window.firebaseDb) {
+        if (window.firebaseDb && typeof firebaseDb.collection === 'function') {
+            console.log("🔥 جاري تحميل المنتجات من Firebase...");
             const querySnapshot = await firebaseDb.collection("products").get();
             products = [];
             
-            querySnapshot.forEach((doc) => {
-                products.push({
-                    id: doc.id,
-                    ...doc.data()
+            if (!querySnapshot.empty) {
+                querySnapshot.forEach((doc) => {
+                    products.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
                 });
-            });
-            
-            console.log("تم تحميل المنتجات من Firebase:", products.length);
+                console.log("✅ تم تحميل المنتجات من Firebase:", products.length);
+            } else {
+                // استخدام بيانات تجريبية إذا لم يكن هناك منتجات في Firebase
+                products = getSampleProducts();
+                console.log("📝 استخدام البيانات التجريبية:", products.length);
+            }
         } else {
-            // استخدام بيانات تجريبية
-            products = [
-                {
-                    id: '1',
-                    name: 'ساعة ذكية',
-                    description: 'ساعة ذكية متطورة مع شاشة AMOLED ومقاومة للماء، تتبع اللياقة البدنية وإشعارات الهاتف.',
-                    price: 299.99,
-                    originalPrice: 399.99,
-                    category: 'electronics',
-                    images: ['https://example.com/watch1.jpg'],
-                    stock: 15,
-                    rating: 4.5,
-                    sales: 150,
-                    featured: true,
-                    trending: true,
-                    discount: 25,
-                    brand: 'Samsung',
-                    specifications: {
-                        'الشاشة': '1.3 بوصة AMOLED',
-                        'البطارية': '7 أيام',
-                        'المقاومة': 'IP68'
-                    },
-                    createdAt: new Date('2024-03-15').toISOString(),
-                    updatedAt: new Date('2024-03-15').toISOString()
-                },
-                {
-                    id: '2',
-                    name: 'حذاء رياضي',
-                    description: 'حذاء رياضي مريح مصمم للركض والتمارين الرياضية، يوفر دعماً ممتازاً للقدم.',
-                    price: 199.99,
-                    originalPrice: 249.99,
-                    category: 'sports',
-                    images: ['https://example.com/shoes1.jpg'],
-                    stock: 30,
-                    rating: 4.2,
-                    sales: 89,
-                    trending: true,
-                    discount: 20,
-                    brand: 'Nike',
-                    specifications: {
-                        'المادة': 'شبكة قابلة للتنفس',
-                        'النعل': 'رغوة الذاكرة',
-                        'المقاسات': '38-45'
-                    },
-                    createdAt: new Date('2024-03-14').toISOString(),
-                    updatedAt: new Date('2024-03-14').toISOString()
-                },
-                {
-                    id: '3',
-                    name: 'سماعات لاسلكية',
-                    description: 'سماعات رأس لاسلكية مع إلغاء الضوضاء النشط وجودة صوت عالية الدقة.',
-                    price: 449.99,
-                    category: 'electronics',
-                    images: ['https://example.com/headphones1.jpg'],
-                    stock: 20,
-                    rating: 4.7,
-                    sales: 67,
-                    featured: true,
-                    brand: 'Sony',
-                    specifications: {
-                        'البطارية': '30 ساعة',
-                        'الإلغاء': 'ضجيج نشط',
-                        'الاتصال': 'بلوتوث 5.0'
-                    },
-                    createdAt: new Date('2024-03-13').toISOString(),
-                    updatedAt: new Date('2024-03-13').toISOString()
-                }
-            ];
-            console.log("استخدام البيانات التجريبية (Firebase غير متوفر):", products.length);
+            // استخدام بيانات تجريبية إذا كان Firebase غير متوفر
+            products = getSampleProducts();
+            console.log("💾 استخدام البيانات التجريبية (Firebase غير متوفر):", products.length);
         }
         
         // الترتيب المخصص: المميزة أولاً، ثم الشائعة، ثم المحدثة حديثاً
@@ -291,16 +259,79 @@ async function loadAdminProducts() {
             return new Date(bDate) - new Date(aDate);
         });
         
-        console.log("تم تحميل المنتجات:", products.length);
+        console.log("✅ تم تحميل المنتجات:", products.length);
         updateStats();
         displayAdminProducts();
+        
     } catch (error) {
-        console.error("Error loading products:", error);
+        console.error("❌ خطأ في تحميل المنتجات:", error);
+        
+        // استخدام بيانات تجريبية في حالة الخطأ
+        products = getSampleProducts();
+        displayAdminProducts();
+        
         const adminProductsList = document.getElementById('adminProductsList');
         if (adminProductsList) {
-            adminProductsList.innerHTML = '<p style="color: red;">خطأ في تحميل المنتجات: ' + error.message + '</p>';
+            adminProductsList.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>تم تحميل بيانات تجريبية للعرض</p>
+                    <small>${error.message}</small>
+                </div>
+            `;
         }
     }
+}
+
+// بيانات تجريبية
+function getSampleProducts() {
+    return [
+        {
+            id: '1',
+            name: 'ساعة ذكية',
+            description: 'ساعة ذكية متطورة مع شاشة AMOLED ومقاومة للماء، تتبع اللياقة البدنية وإشعارات الهاتف.',
+            price: 299.99,
+            originalPrice: 399.99,
+            category: 'electronics',
+            images: ['https://via.placeholder.com/300x300?text=ساعة+ذكية'],
+            stock: 15,
+            rating: 4.5,
+            sales: 150,
+            featured: true,
+            trending: true,
+            discount: 25,
+            brand: 'Samsung',
+            specifications: {
+                'الشاشة': '1.3 بوصة AMOLED',
+                'البطارية': '7 أيام',
+                'المقاومة': 'IP68'
+            },
+            createdAt: new Date('2024-03-15').toISOString(),
+            updatedAt: new Date('2024-03-15').toISOString()
+        },
+        {
+            id: '2',
+            name: 'حذاء رياضي',
+            description: 'حذاء رياضي مريح مصمم للركض والتمارين الرياضية، يوفر دعماً ممتازاً للقدم.',
+            price: 199.99,
+            originalPrice: 249.99,
+            category: 'sports',
+            images: ['https://via.placeholder.com/300x300?text=حذاء+رياضي'],
+            stock: 30,
+            rating: 4.2,
+            sales: 89,
+            trending: true,
+            discount: 20,
+            brand: 'Nike',
+            specifications: {
+                'المادة': 'شبكة قابلة للتنفس',
+                'النعل': 'رغوة الذاكرة',
+                'المقاسات': '38-45'
+            },
+            createdAt: new Date('2024-03-14').toISOString(),
+            updatedAt: new Date('2024-03-14').toISOString()
+        }
+    ];
 }
 
 // تحديث الإحصائيات
@@ -321,13 +352,16 @@ function updateStats() {
     if (totalStock) totalStock.textContent = totalStockCount;
     
     updateSearchStats();
-    console.log("تم تحديث الإحصائيات:", products.length);
+    console.log("📊 تم تحديث الإحصائيات:", { products: products.length, sales: totalSalesCount, stock: totalStockCount });
 }
 
 // عرض المنتجات في لوحة التحكم
 function displayAdminProducts() {
     const container = document.getElementById('adminProductsList');
-    if (!container) return;
+    if (!container) {
+        console.error("❌ لم يتم العثور على عنصر adminProductsList");
+        return;
+    }
     
     // تصفية المنتجات حسب البحث
     let filteredProducts = products;
@@ -350,8 +384,15 @@ function displayAdminProducts() {
                 </div>
             `;
         } else {
-            container.innerHTML = '<p>لا توجد منتجات مضافة بعد</p>';
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fas fa-box-open"></i>
+                    <p>لا توجد منتجات مضافة بعد</p>
+                    <small>استخدم النموذج أعلاه لإضافة منتج جديد</small>
+                </div>
+            `;
         }
+        console.log("📭 لا توجد منتجات للعرض");
         return;
     }
     
@@ -464,108 +505,167 @@ function displayAdminProducts() {
         });
     });
     
-    console.log("تم عرض المنتجات في لوحة التحكم");
+    console.log("✅ تم عرض المنتجات في لوحة التحكم:", filteredProducts.length);
 }
 
-// إضافة منتج جديد
+// إضافة منتج جديد - النسخة المصححة بالكامل
 function initializeAddProductForm() {
     const form = document.getElementById('addProductForm');
     const messageDiv = document.getElementById('formMessage');
     const loadingModal = document.getElementById('loadingModal');
 
     if (!form) {
-        console.error('لم يتم العثور على النموذج!');
+        console.error('❌ لم يتم العثور على النموذج!');
         return;
     }
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        console.log("تم الضغط على إضافة منتج");
+        console.log("🔄 بدء إضافة منتج جديد...");
         
         // إظهار نافذة التحميل
         if (loadingModal) loadingModal.style.display = 'block';
         
-        // الحصول على البيانات من النموذج
-        const productData = {
-            name: document.getElementById('productName').value.trim(),
-            description: document.getElementById('productDescription').value.trim(),
-            price: parseFloat(document.getElementById('productPrice').value),
-            originalPrice: document.getElementById('productOriginalPrice').value ? parseFloat(document.getElementById('productOriginalPrice').value) : null,
-            stock: parseInt(document.getElementById('productStock').value),
-            category: document.getElementById('productCategory').value,
-            brand: document.getElementById('productBrand').value.trim() || null,
-            discount: document.getElementById('productDiscount').value ? parseInt(document.getElementById('productDiscount').value) : null,
-            featured: document.getElementById('productFeatured').checked,
-            trending: document.getElementById('productTrending').checked,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            sales: 0,
-            rating: null
-        };
-
-        // الحصول على رابط الصورة
-        const imageURL = document.getElementById('productImageURL').value.trim();
-        if (imageURL) {
-            productData.images = [imageURL];
-        }
-
-        // معالجة المواصفات
-        const specificationsText = document.getElementById('productSpecifications').value.trim();
-        if (specificationsText) {
-            const specifications = {};
-            const lines = specificationsText.split('\n');
-            lines.forEach(line => {
-                const [key, value] = line.split(':').map(part => part.trim());
-                if (key && value) {
-                    specifications[key] = value;
-                }
-            });
-            productData.specifications = specifications;
-        }
-
-        console.log("بيانات المنتج:", productData);
-
-        // التحقق من الحقول المطلوبة
-        if (!productData.name || !productData.description || !productData.price || 
-            !productData.stock || !productData.category || !imageURL) {
-            showMessage('يرجى ملء جميع الحقول المطلوبة', 'error');
-            if (loadingModal) loadingModal.style.display = 'none';
-            return;
-        }
-
         try {
-            // إضافة المنتج إلى Firebase
-            if (window.firebaseDb) {
-                console.log("جاري إضافة المنتج إلى Firebase...");
-                const docRef = await firebaseDb.collection("products").add(productData);
-                console.log("تم إضافة المنتج بنجاح! ID:", docRef.id);
-                showMessage('تم إضافة المنتج بنجاح!', 'success');
-            } else {
-                // إضافة محلية للبيانات التجريبية
-                const newProduct = {
-                    ...productData,
-                    id: 'product-' + Date.now()
-                };
-                products.push(newProduct);
-                showMessage('تم إضافة المنتج بنجاح (محلي)!', 'success');
+            // الحصول على البيانات من النموذج
+            const productData = {
+                name: document.getElementById('productName').value.trim(),
+                description: document.getElementById('productDescription').value.trim(),
+                price: parseFloat(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value),
+                category: document.getElementById('productCategory').value,
+                featured: document.getElementById('productFeatured').checked,
+                trending: document.getElementById('productTrending').checked,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                sales: 0,
+                rating: null
+            };
+
+            // الحقول الاختيارية
+            const originalPrice = document.getElementById('productOriginalPrice').value;
+            const brand = document.getElementById('productBrand').value.trim();
+            const discount = document.getElementById('productDiscount').value;
+            const imageURL = document.getElementById('productImageURL').value.trim();
+            const specificationsText = document.getElementById('productSpecifications').value.trim();
+
+            if (originalPrice) productData.originalPrice = parseFloat(originalPrice);
+            if (brand) productData.brand = brand;
+            if (discount) productData.discount = parseInt(discount);
+            if (imageURL) productData.images = [imageURL];
+
+            // معالجة المواصفات
+            if (specificationsText) {
+                const specifications = {};
+                const lines = specificationsText.split('\n');
+                lines.forEach(line => {
+                    const [key, value] = line.split(':').map(part => part.trim());
+                    if (key && value) {
+                        specifications[key] = value;
+                    }
+                });
+                productData.specifications = specifications;
             }
 
-            // إعادة تعيين النموذج
-            form.reset();
+            console.log("📦 بيانات المنتج المدخل:", productData);
 
-            // إعادة تحميل القائمة
-            await loadAdminProducts();
+            // التحقق من الحقول المطلوبة
+            const requiredFields = [
+                { field: productData.name, name: 'اسم المنتج' },
+                { field: productData.description, name: 'وصف المنتج' },
+                { field: productData.price, name: 'السعر' },
+                { field: productData.stock, name: 'المخزون' },
+                { field: productData.category, name: 'التصنيف' },
+                { field: imageURL, name: 'صورة المنتج' }
+            ];
+
+            for (let req of requiredFields) {
+                if (!req.field) {
+                    throw new Error(`حقل ${req.name} مطلوب`);
+                }
+            }
+
+            // التحقق من الأرقام
+            if (isNaN(productData.price) || productData.price <= 0) {
+                throw new Error('السعر يجب أن يكون رقماً صحيحاً أكبر من الصفر');
+            }
+            if (isNaN(productData.stock) || productData.stock < 0) {
+                throw new Error('المخزون يجب أن يكون رقماً صحيحاً');
+            }
+
+            let newProductId;
+            let addSuccess = false;
+
+            // إضافة المنتج إلى Firebase
+            if (window.firebaseDb && typeof firebaseDb.collection === 'function') {
+                console.log("🔥 جاري إضافة المنتج إلى Firebase...");
+                try {
+                    const docRef = await firebaseDb.collection("products").add(productData);
+                    newProductId = docRef.id;
+                    addSuccess = true;
+                    console.log("✅ تم إضافة المنتج إلى Firebase بنجاح! ID:", newProductId);
+                } catch (firebaseError) {
+                    console.error("❌ خطأ في إضافة المنتج إلى Firebase:", firebaseError);
+                    throw new Error('فشل في إضافة المنتج إلى قاعدة البيانات: ' + firebaseError.message);
+                }
+            } else {
+                // إضافة محلية للبيانات التجريبية
+                console.log("💾 جاري إضافة المنتج محلياً...");
+                newProductId = 'product-' + Date.now();
+                const newProduct = {
+                    ...productData,
+                    id: newProductId
+                };
+                products.push(newProduct);
+                addSuccess = true;
+                console.log("✅ تم إضافة المنتج محلياً:", newProduct);
+            }
+
+            if (addSuccess) {
+                // إظهار رسالة النجاح
+                showMessage('✅ تم إضافة المنتج بنجاح!', 'success');
+
+                // إعادة تعيين النموذج بعد نجاح الإضافة
+                setTimeout(() => {
+                    form.reset();
+                    if (loadingModal) loadingModal.style.display = 'none';
+                    
+                    // إعادة تحميل القائمة
+                    loadAdminProducts().then(() => {
+                        console.log("🔄 تم تحديث قائمة المنتجات بعد الإضافة");
+                    });
+                }, 1500);
+            }
 
         } catch (error) {
-            console.error("Error adding product:", error);
-            showMessage('خطأ في إضافة المنتج: ' + error.message, 'error');
-        } finally {
-            // إخفاء نافذة التحميل
+            console.error("❌ خطأ في إضافة المنتج:", error);
+            showMessage('❌ خطأ في إضافة المنتج: ' + error.message, 'error');
             if (loadingModal) loadingModal.style.display = 'none';
         }
     });
 
-    console.log("تم تهيئة نموذج إضافة المنتج");
+    console.log("✅ تم تهيئة نموذج إضافة المنتج");
+}
+
+// دالة اختبار إضافة منتج
+function testAddProduct() {
+    console.log("🧪 بدء اختبار إضافة منتج...");
+    
+    // تعبئة النموذج ببيانات اختبار
+    document.getElementById('productName').value = 'منتج تجريبي ' + new Date().getTime();
+    document.getElementById('productDescription').value = 'هذا منتج تجريبي للاختبار تم إنشاؤه تلقائياً';
+    document.getElementById('productPrice').value = '149.99';
+    document.getElementById('productOriginalPrice').value = '199.99';
+    document.getElementById('productStock').value = '25';
+    document.getElementById('productCategory').value = 'electronics';
+    document.getElementById('productImageURL').value = 'https://via.placeholder.com/300x300?text=منتج+تجريبي';
+    document.getElementById('productBrand').value = 'علامة تجارية تجريبية';
+    document.getElementById('productDiscount').value = '25';
+    document.getElementById('productSpecifications').value = 'اللون: أسود\nالحجم: كبير\nالمادة: بلاستيك';
+    document.getElementById('productFeatured').checked = true;
+    
+    console.log("✅ تم تعبئة النموذج ببيانات اختبار");
+    showMessage('تم تعبئة النموذج ببيانات اختبار، يمكنك الآن الضغط على "إضافة المنتج"', 'success');
 }
 
 // تهيئة نموذج التعديل
@@ -573,6 +673,9 @@ function initializeEditProductForm() {
     const form = document.getElementById('editProductForm');
     if (form) {
         form.addEventListener('submit', updateProduct);
+        console.log("✅ تم تهيئة نموذج تعديل المنتج");
+    } else {
+        console.error("❌ لم يتم العثور على نموذج التعديل");
     }
     
     // إغلاق النافذة عند النقر على X
@@ -594,23 +697,34 @@ function initializeEditProductForm() {
 
 // حذف المنتج
 async function deleteAdminProduct(productId) {
-    if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء.')) {
+        console.log("❌ تم إلغاء حذف المنتج");
+        return;
+    }
     
     try {
-        console.log("جاري حذف المنتج:", productId);
+        console.log("🗑️ جاري حذف المنتج:", productId);
         
-        if (window.firebaseDb) {
+        let deleteSuccess = false;
+
+        if (window.firebaseDb && typeof firebaseDb.collection === 'function') {
             await firebaseDb.doc(`products/${productId}`).delete();
+            deleteSuccess = true;
+            console.log("✅ تم حذف المنتج من Firebase");
         } else {
             // حذف محلي للبيانات التجريبية
             products = products.filter(product => product.id !== productId);
+            deleteSuccess = true;
+            console.log("✅ تم حذف المنتج محلياً");
         }
         
-        showMessage('تم حذف المنتج بنجاح', 'success');
-        await loadAdminProducts(); // إعادة تحميل القائمة
+        if (deleteSuccess) {
+            showMessage('✅ تم حذف المنتج بنجاح', 'success');
+            await loadAdminProducts(); // إعادة تحميل القائمة
+        }
     } catch (error) {
-        console.error("Error deleting product:", error);
-        showMessage('خطأ في حذف المنتج: ' + error.message, 'error');
+        console.error("❌ خطأ في حذف المنتج:", error);
+        showMessage('❌ خطأ في حذف المنتج: ' + error.message, 'error');
     }
 }
 
@@ -644,28 +758,45 @@ function getCategoryName(category) {
     return categories[category] || category;
 }
 
-// عرض الرسائل
+// عرض الرسائل المحسنة
 function showMessage(text, type) {
+    console.log(`📢 ${type}: ${text}`);
+    
     const messageDiv = document.getElementById('formMessage');
     if (messageDiv) {
-        messageDiv.textContent = text;
-        messageDiv.style.color = type === 'success' ? 'green' : 'red';
-        messageDiv.style.padding = '10px';
-        messageDiv.style.margin = '10px 0';
-        messageDiv.style.borderRadius = '5px';
-        messageDiv.style.backgroundColor = type === 'success' ? '#e8f5e8' : '#ffe8e8';
-        messageDiv.style.border = type === 'success' ? '1px solid #27ae60' : '1px solid #e74c3c';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        const bgColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        const textColor = type === 'success' ? '#155724' : '#721c24';
+        const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+        
+        messageDiv.innerHTML = `
+            <div style="
+                padding: 12px 16px;
+                margin: 10px 0;
+                border-radius: 8px;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: ${bgColor};
+                color: ${textColor};
+                border: 1px solid ${borderColor};
+            ">
+                <i class="fas ${icon}"></i>
+                ${text}
+            </div>
+        `;
         
         // إخفاء الرسالة بعد 5 ثواني
         setTimeout(() => {
-            messageDiv.textContent = '';
-            messageDiv.style.backgroundColor = 'transparent';
-            messageDiv.style.border = 'none';
+            messageDiv.innerHTML = '';
         }, 5000);
     }
     
-    // أيضاً عرض في الكونسول
-    console.log(type.toUpperCase() + ":", text);
+    // أيضاً عرض تنبيه للمستخدم للرسائل الهامة
+    if (type === 'error') {
+        alert(text);
+    }
 }
 
 // التحقق من تسجيل الدخول
@@ -673,10 +804,10 @@ function checkAdminAuth() {
     const user = localStorage.getItem('user');
     const isAdmin = localStorage.getItem('isAdmin');
     
-    console.log("التحقق من المصادقة:", { user, isAdmin });
+    console.log("🔐 التحقق من المصادقة:", { user: !!user, isAdmin: !!isAdmin });
     
     if (!user || !isAdmin) {
-        console.log("المستخدم غير مسجل - إعادة التوجيه إلى الصفحة الرئيسية");
+        console.log("❌ المستخدم غير مسجل - إعادة التوجيه إلى الصفحة الرئيسية");
         
         // عرض رسالة للمستخدم
         const adminContainer = document.querySelector('.admin-container');
@@ -746,14 +877,17 @@ function setupAdminSearch() {
     if (searchBtn) {
         searchBtn.addEventListener('click', searchAdminProducts);
     }
+    
+    console.log("✅ تم تهيئة البحث في لوحة التحكم");
 }
 
 // تهيئة لوحة التحكم
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("تم تحميل صفحة لوحة التحكم");
+    console.log("🚀 بدء تهيئة لوحة التحكم...");
     
     // التحقق من تسجيل الدخول أولاً
     if (!checkAdminAuth()) {
+        console.log("❌ لم يتم التحقق من المصادقة، إيقاف التهيئة");
         return;
     }
     
@@ -779,7 +913,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    console.log("تم تهيئة لوحة التحكم بالكامل");
+    console.log("✅ تم تهيئة لوحة التحكم بالكامل");
 });
 
 // جعل الدوال متاحة globally
@@ -791,4 +925,4 @@ window.closeEditModal = closeEditModal;
 window.updateProduct = updateProduct;
 window.searchAdminProducts = searchAdminProducts;
 window.clearAdminSearch = clearAdminSearch;
-[file content end]
+window.testAddProduct = testAddProduct;
