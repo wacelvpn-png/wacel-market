@@ -1,0 +1,48 @@
+<!-- تحديث العناوين -->
+<h2>إدارة المنتجات</h2>
+
+<!-- تحديث نموذج الإضافة -->
+<section class="add-product-section">
+    <h3>إضافة منتج جديد</h3>
+    <form id="addProductForm" class="product-form">
+        <!-- إضافة حقول السعر -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="productPrice">السعر (ريال يمني) *</label>
+                <input type="number" id="productPrice" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="productOriginalPrice">السعر الأصلي (قبل الخصم)</label>
+                <input type="number" id="productOriginalPrice" step="0.01">
+            </div>
+        </div>
+        
+        <!-- تحديث الفئات -->
+        <div class="form-group">
+            <label for="productCategory">التصنيف *</label>
+            <select id="productCategory" required>
+                <option value="">اختر التصنيف</option>
+                <option value="electronics">إلكترونيات</option>
+                <option value="fashion">أزياء</option>
+                <option value="home">منزل</option>
+                <option value="sports">رياضة</option>
+                <option value="books">كتب</option>
+                <option value="beauty">جمال</option>
+            </select>
+        </div>
+        
+        <!-- باقي الحقول -->
+    </form>
+</section>
+
+<!-- تحديث قسم الإدارة -->
+<section class="products-management">
+    <div class="section-header">
+        <h3>المنتجات المضافة</h3>
+        <span id="productsCount" class="products-count">(0 منتج)</span>
+    </div>
+    <div id="adminProductsList" class="admin-products-grid">
+        <p>جاري تحميل المنتجات...</p>
+    </div>
+</section>
