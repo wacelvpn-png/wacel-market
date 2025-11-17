@@ -1,335 +1,15 @@
+[file name]: admin.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - وسيل ماركت</title>
-    
-    <!-- تضمين CSS مباشرة في الصفحة -->
-    <style>
-        /* أنماط أساسية */
-        :root {
-            --primary: #3498db;
-            --primary-dark: #2980b9;
-            --secondary: #e74c3c;
-            --bg-light: #f8f9fa;
-            --text-dark: #2c3e50;
-            --text-light: #7f8c8d;
-            --border: #e1e8ed;
-            --shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg-light);
-            color: var(--text-dark);
-            direction: rtl;
-            line-height: 1.6;
-        }
-        
-        .navbar {
-            background: white;
-            box-shadow: var(--shadow);
-            padding: 1rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-        
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            color: var(--primary);
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-        
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 500;
-        }
-        
-        .btn-logout {
-            background: var(--secondary);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .admin-main {
-            margin-top: 80px;
-            padding: 2rem 0;
-            min-height: calc(100vh - 80px);
-        }
-        
-        .admin-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-        
-        .admin-container h2 {
-            text-align: center;
-            margin-bottom: 2rem;
-            color: var(--text-dark);
-        }
-        
-        /* إحصائيات */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .stat-card h3 {
-            color: var(--text-light);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-card p {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--text-dark);
-        }
-        
-        /* نموذج إضافة منتج */
-        .add-app-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-        }
-        
-        .add-app-section h3 {
-            margin-bottom: 1.5rem;
-            color: var(--text-dark);
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 0.5rem;
-        }
-        
-        .app-form {
-            max-width: 600px;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-            color: var(--text-dark);
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            font-size: 1rem;
-            font-family: inherit;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        .submit-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 1rem;
-        }
-        
-        .submit-btn:hover {
-            background: var(--primary-dark);
-        }
-        
-        /* إدارة المنتجات */
-        .apps-management {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-        }
-        
-        .apps-management h3 {
-            margin-bottom: 1.5rem;
-            color: var(--text-dark);
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 0.5rem;
-        }
-        
-        .admin-apps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .admin-app-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            border-left: 4px solid var(--primary);
-        }
-        
-        .admin-app-card h4 {
-            color: var(--text-dark);
-            margin-bottom: 0.5rem;
-        }
-        
-        .admin-app-card p {
-            color: var(--text-light);
-            margin-bottom: 1rem;
-        }
-        
-        .admin-app-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        
-        .btn-edit, .btn-delete {
-            flex: 1;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            color: white;
-        }
-        
-        .btn-edit {
-            background: #f39c12;
-        }
-        
-        .btn-delete {
-            background: var(--secondary);
-        }
-        
-        /* شريط البحث */
-        .admin-search-section {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .search-bar-admin {
-            display: flex;
-            flex: 1;
-            background: white;
-            border-radius: 50px;
-            padding: 0.5rem;
-            box-shadow: var(--shadow);
-            border: 2px solid var(--border);
-        }
-        
-        .search-bar-admin input {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 0.5rem;
-        }
-        
-        .search-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-        }
-        
-        .clear-search-btn {
-            background: var(--secondary);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        /* التصميم المتجاوب */
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .admin-apps-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .admin-search-section {
-                flex-direction: column;
-            }
-        }
-    </style>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase -->
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/admin.css">
+    <!-- إضافة Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -337,7 +17,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <h1 class="logo">لوحة التحكم</h1>
+            <h1 class="logo">لوحة التحكم - وسيل ماركت</h1>
             <div class="nav-links">
                 <a href="index.html">العودة للمتجر</a>
                 <button id="adminLogoutBtn" class="btn-logout">تسجيل الخروج</button>
@@ -349,12 +29,12 @@
         <div class="admin-container">
             <h2>إدارة المنتجات</h2>
             
-            <!-- شريط البحث -->
+            <!-- شريط البحث في لوحة التحكم -->
             <div class="admin-search-section">
                 <div class="search-bar-admin">
-                    <i class="fas fa-search" style="padding: 0.5rem 1rem; color: #7f8c8d;"></i>
-                    <input type="text" id="adminSearchInput" placeholder="ابحث عن المنتجات...">
-                    <button class="search-btn" onclick="searchAdminApps()">بحث</button>
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="adminSearchInput" placeholder="ابحث عن المنتجات بالاسم أو التصنيف...">
+                    <button class="search-btn" onclick="searchAdminProducts()">بحث</button>
                 </div>
                 <button class="clear-search-btn" onclick="clearAdminSearch()" style="display: none;">
                     <i class="fas fa-times"></i>
@@ -362,100 +42,107 @@
                 </button>
             </div>
 
-            <!-- إحصائيات -->
+            <!-- إحصائيات سريعة -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>إجمالي المنتجات</h3>
-                    <p id="totalApps">0</p>
+                    <p id="totalProducts">0</p>
                 </div>
                 <div class="stat-card">
                     <h3>المنتجات النشطة</h3>
-                    <p id="activeApps">0</p>
+                    <p id="activeProducts">0</p>
                 </div>
                 <div class="stat-card">
-                    <h3>نتائج البحث</h3>
-                    <p id="searchResultsCount">-</p>
+                    <h3>المبيعات</h3>
+                    <p id="totalSales">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>المخزون</h3>
+                    <p id="totalStock">0</p>
                 </div>
             </div>
 
-            <!-- نموذج إضافة منتج -->
-            <section class="add-app-section">
+            <!-- نموذج إضافة منتج جديد -->
+            <section class="add-product-section">
                 <h3>إضافة منتج جديد</h3>
-                <form id="addAppForm" class="app-form">
+                <form id="addProductForm" class="product-form">
                     <div class="form-group">
-                        <label for="appName">اسم المنتج *</label>
-                        <input type="text" id="appName" required>
+                        <label for="productName">اسم المنتج *</label>
+                        <input type="text" id="productName" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="appDescription">وصف المنتج *</label>
-                        <textarea id="appDescription" rows="4" required></textarea>
+                        <label for="productDescription">وصف المنتج *</label>
+                        <textarea id="productDescription" rows="4" placeholder="وصف مفصل عن المنتج..." required></textarea>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="appVersion">الموديل *</label>
-                            <input type="text" id="appVersion" required>
+                            <label for="productPrice">السعر (ريال) *</label>
+                            <input type="number" id="productPrice" step="0.01" min="0" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="appSize">الوزن (جرام) *</label>
-                            <input type="number" id="appSize" required>
+                            <label for="productOriginalPrice">السعر الأصلي (ريال)</label>
+                            <input type="number" id="productOriginalPrice" step="0.01" min="0">
                         </div>
                     </div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="appPrice">السعر (ريال يمني) *</label>
-                            <input type="number" id="appPrice" step="0.01" required>
+                            <label for="productStock">الكمية في المخزون *</label>
+                            <input type="number" id="productStock" min="0" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="appOriginalPrice">السعر الأصلي (قبل الخصم)</label>
-                            <input type="number" id="appOriginalPrice" step="0.01">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="appCategory">التصنيف *</label>
-                            <select id="appCategory" required>
+                            <label for="productCategory">التصنيف *</label>
+                            <select id="productCategory" required>
                                 <option value="">اختر التصنيف</option>
                                 <option value="electronics">إلكترونيات</option>
-                                <option value="fashion">أزياء</option>
-                                <option value="home">منزل</option>
+                                <option value="fashion">موضة</option>
+                                <option value="home">المنزل</option>
+                                <option value="beauty">الجمال</option>
                                 <option value="sports">رياضة</option>
                                 <option value="books">كتب</option>
-                                <option value="beauty">جمال</option>
+                                <option value="food">طعام</option>
+                                <option value="health">صحة</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productBrand">العلامة التجارية</label>
+                            <input type="text" id="productBrand">
                         </div>
                         
                         <div class="form-group">
-                            <label for="appRating">التقييم (1-5)</label>
-                            <input type="number" id="appRating" min="1" max="5" step="0.1">
+                            <label for="productDiscount">التخفيض (%)</label>
+                            <input type="number" id="productDiscount" min="0" max="100">
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="appDownloadURL">رابط الطلب (واتساب) *</label>
-                        <input type="url" id="appDownloadURL" required>
+                        <label for="productImageURL">رابط صورة المنتج *</label>
+                        <input type="url" id="productImageURL" placeholder="https://example.com/image.jpg" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="appIconURL">رابط الصورة (اختياري)</label>
-                        <input type="url" id="appIconURL">
+                        <label for="productSpecifications">المواصفات (اختياري)</label>
+                        <textarea id="productSpecifications" rows="3" placeholder="مواصفات المنتج (كل سطر خاصية:قيمة)"></textarea>
+                        <small>أدخل كل مواصفة في سطر جديد بالشكل: الخاصية: القيمة</small>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
                             <label>
-                                <input type="checkbox" id="appFeatured"> منتج مميز
+                                <input type="checkbox" id="productFeatured"> منتج مميز
                             </label>
                         </div>
                         
                         <div class="form-group">
                             <label>
-                                <input type="checkbox" id="appTrending"> منتج شائع
+                                <input type="checkbox" id="productTrending"> منتج شائع
                             </label>
                         </div>
                     </div>
@@ -466,69 +153,123 @@
             </section>
 
             <!-- قائمة المنتجات -->
-            <section class="apps-management">
+            <section class="products-management">
                 <div class="section-header">
                     <h3>المنتجات المضافة</h3>
-                    <span id="appsCount" class="apps-count">(0 منتج)</span>
+                    <span id="productsCount" class="products-count">(0 منتج)</span>
                 </div>
-                <div id="adminAppsList" class="admin-apps-grid">
+                <div id="adminProductsList" class="admin-products-grid">
                     <p>جاري تحميل المنتجات...</p>
                 </div>
             </section>
         </div>
     </main>
 
+    <!-- نافذة التحميل -->
+    <div id="loadingModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>جاري معالجة الطلب...</h3>
+            <p>يرجى الانتظار</p>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل المنتج -->
+    <div id="editProductModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>تعديل المنتج</h3>
+            <form id="editProductForm" class="product-form">
+                <input type="hidden" id="editProductId">
+                
+                <div class="form-group">
+                    <label for="editProductName">اسم المنتج *</label>
+                    <input type="text" id="editProductName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editProductDescription">وصف المنتج *</label>
+                    <textarea id="editProductDescription" rows="4" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editProductPrice">السعر (ريال) *</label>
+                        <input type="number" id="editProductPrice" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editProductOriginalPrice">السعر الأصلي (ريال)</label>
+                        <input type="number" id="editProductOriginalPrice" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editProductStock">الكمية في المخزون *</label>
+                        <input type="number" id="editProductStock" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editProductCategory">التصنيف *</label>
+                        <select id="editProductCategory" required>
+                            <option value="">اختر التصنيف</option>
+                            <option value="electronics">إلكترونيات</option>
+                            <option value="fashion">موضة</option>
+                            <option value="home">المنزل</option>
+                            <option value="beauty">الجمال</option>
+                            <option value="sports">رياضة</option>
+                            <option value="books">كتب</option>
+                            <option value="food">طعام</option>
+                            <option value="health">صحة</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editProductBrand">العلامة التجارية</label>
+                        <input type="text" id="editProductBrand">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editProductDiscount">التخفيض (%)</label>
+                        <input type="number" id="editProductDiscount" min="0" max="100">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editProductImageURL">رابط صورة المنتج *</label>
+                    <input type="url" id="editProductImageURL" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editProductSpecifications">المواصفات (اختياري)</label>
+                    <textarea id="editProductSpecifications" rows="3" placeholder="مواصفات المنتج (كل سطر خاصية:قيمة)"></textarea>
+                    <small>أدخل كل مواصفة في سطر جديد بالشكل: الخاصية: القيمة</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="editProductFeatured"> منتج مميز
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="editProductTrending"> منتج شائع
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
     <!-- تحميل ملفات JavaScript -->
     <script src="js/firebase-config.js"></script>
     <script src="js/admin.js"></script>
-
-    <script>
-        // كود بسيط للتحقق من أن الصفحة تعمل
-        console.log("✅ صفحة admin.html محملة بنجاح!");
-        
-        // عرض رسالة ترحيب
-        setTimeout(() => {
-            const messageDiv = document.getElementById('formMessage');
-            if (messageDiv) {
-                messageDiv.innerHTML = '<p style="color: green; padding: 10px; background: #e8f5e8; border-radius: 5px;">✅ لوحة التحكم جاهزة للاستخدام!</p>';
-            }
-            
-            // تعبئة بعض البيانات الاختبارية
-            document.getElementById('totalApps').textContent = '3';
-            document.getElementById('activeApps').textContent = '3';
-            document.getElementById('appsCount').textContent = '(3 منتج)';
-            
-            // عرض منتجات تجريبية
-            const productsList = document.getElementById('adminAppsList');
-            if (productsList) {
-                productsList.innerHTML = `
-                    <div class="admin-app-card">
-                        <h4>هاتف ذكي - Samsung Galaxy S23</h4>
-                        <p>هاتف ذكي بمواصفات عالية، شاشة 6.1 بوصة، كاميرا 50 ميجابكسل</p>
-                        <div class="admin-app-actions">
-                            <button class="btn-edit">تعديل</button>
-                            <button class="btn-delete">حذف</button>
-                        </div>
-                    </div>
-                    <div class="admin-app-card">
-                        <h4>لابتوب - Dell XPS 13</h4>
-                        <p>لابتوب محمول بشاشة 13.4 بوصة، معالج Intel Core i7، ذاكرة 16GB</p>
-                        <div class="admin-app-actions">
-                            <button class="btn-edit">تعديل</button>
-                            <button class="btn-delete">حذف</button>
-                        </div>
-                    </div>
-                    <div class="admin-app-card">
-                        <h4>سماعات لاسلكية - Sony WH-1000XM4</h4>
-                        <p>سماعات رأس لاسلكية مع إلغاء ضوضاء نشط، بطارية تعمل حتى 30 ساعة</p>
-                        <div class="admin-app-actions">
-                            <button class="btn-edit">تعديل</button>
-                            <button class="btn-delete">حذف</button>
-                        </div>
-                    </div>
-                `;
-            }
-        }, 1000);
-    </script>
 </body>
 </html>
+[file content end]
