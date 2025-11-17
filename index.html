@@ -1,51 +1,314 @@
-<!-- في قسم الفئات، استبدل فئات التطبيقات بفئات المنتجات -->
-<section class="categories-section">
-    <div class="categories-scroll-container">
-        <div class="categories-scroll">
-            <button class="category-filter active" data-category="all" onclick="filterProducts('all')">
-                <i class="fas fa-th-large"></i>
-                <span>الكل</span>
-            </button>
-            <button class="category-filter" data-category="electronics" onclick="filterProducts('electronics')">
-                <i class="fas fa-mobile-alt"></i>
-                <span>إلكترونيات</span>
-            </button>
-            <button class="category-filter" data-category="fashion" onclick="filterProducts('fashion')">
-                <i class="fas fa-tshirt"></i>
-                <span>أزياء</span>
-            </button>
-            <button class="category-filter" data-category="home" onclick="filterProducts('home')">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>وسـيـل ماركت - متجرك الإلكتروني</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/style.css">
+    <!-- إضافة Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body>
+    <!-- الشريط العلوي -->
+    <nav class="top-navbar">
+        <div class="nav-container">
+            <div class="logo-section">
+                <h1 class="logo"><i class="fas fa-shopping-bag"></i> وسـيـل ماركت</h1>
+            </div>
+            <div class="nav-actions">
+                <div class="search-icon-top" id="searchIconTop">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="cart-icon-top" id="cartIconTop">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </div>
+                <button id="loginBtn" class="icon-btn">
+                    <span class="icon-w">W</span>
+                </button>
+                <button id="logoutBtn" class="btn-logout" style="display:none;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+        <!-- قسم الهيرو -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">اكتشف أفضل المنتجات</h1>
+                <p class="hero-subtitle">تسوق أحدث المنتجات بأسعار تنافسية مع توصيل سريع</p>
+            </div>
+        </section>
+
+        <!-- شريط تصفية الفئات -->
+        <section class="categories-section">
+            <div class="categories-scroll-container">
+                <div class="categories-scroll">
+                    <button class="category-filter active" data-category="all" onclick="filterProducts('all')">
+                        <i class="fas fa-th-large"></i>
+                        <span>الكل</span>
+                    </button>
+                    <button class="category-filter" data-category="electronics" onclick="filterProducts('electronics')">
+                        <i class="fas fa-laptop"></i>
+                        <span>إلكترونيات</span>
+                    </button>
+                    <button class="category-filter" data-category="fashion" onclick="filterProducts('fashion')">
+                        <i class="fas fa-tshirt"></i>
+                        <span>موضة</span>
+                    </button>
+                    <button class="category-filter" data-category="home" onclick="filterProducts('home')">
+                        <i class="fas fa-home"></i>
+                        <span>المنزل</span>
+                    </button>
+                    <button class="category-filter" data-category="beauty" onclick="filterProducts('beauty')">
+                        <i class="fas fa-spa"></i>
+                        <span>الجمال</span>
+                    </button>
+                    <button class="category-filter" data-category="sports" onclick="filterProducts('sports')">
+                        <i class="fas fa-running"></i>
+                        <span>رياضة</span>
+                    </button>
+                    <button class="category-filter" data-category="books" onclick="filterProducts('books')">
+                        <i class="fas fa-book"></i>
+                        <span>كتب</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- جميع المنتجات -->
+        <section class="all-products-section">
+            <div class="section-header">
+                <h2 class="section-title">جميع المنتجات</h2>
+            </div>
+            <div id="products-list" class="products-grid">
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>جاري تحميل المنتجات...</p>
+                </div>
+            </div>
+            <div id="load-more-container" class="load-more-container" style="display: none;">
+                <button id="loadMoreBtn" class="load-more-btn">
+                    <i class="fas fa-chevron-down"></i>
+                    عرض المزيد من المنتجات
+                </button>
+            </div>
+        </section>
+
+        <!-- أقسام خاصة -->
+        <section class="special-sections">
+            <div class="section-tabs">
+                <button class="section-tab" data-section="featured" onclick="displaySpecialSection('featured')">
+                    <i class="fas fa-star"></i>
+                    <span>مميزة</span>
+                </button>
+                <button class="section-tab" data-section="trending" onclick="displaySpecialSection('trending')">
+                    <i class="fas fa-fire"></i>
+                    <span>الأكثر مبيعاً</span>
+                </button>
+                <button class="section-tab" data-section="discount" onclick="displaySpecialSection('discount')">
+                    <i class="fas fa-tag"></i>
+                    <span>عروض</span>
+                </button>
+            </div>
+            
+            <div id="featured-section" class="special-section-content" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">المنتجات المميزة</h2>
+                </div>
+                <div id="featured-products" class="products-grid">
+                    <!-- سيتم تعبئة المنتجات المميزة هنا -->
+                </div>
+            </div>
+            
+            <div id="trending-section" class="special-section-content" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">الأكثر مبيعاً</h2>
+                </div>
+                <div id="trending-products" class="products-grid">
+                    <!-- سيتم تعبئة المنتجات الشائعة هنا -->
+                </div>
+            </div>
+            
+            <div id="discount-section" class="special-section-content" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">العروض والتخفيضات</h2>
+                </div>
+                <div id="discount-products" class="products-grid">
+                    <!-- سيتم تعبئة المنتجات المخفضة هنا -->
+                </div>
+            </div>
+        </section>
+
+        <!-- إعلانات مقترحة -->
+        <section class="ads-section">
+            <div class="section-header">
+                <h2 class="section-title">عروض خاصة</h2>
+            </div>
+            <div class="ads-grid">
+                <div class="ad-card">
+                    <div class="ad-badge">شحن مجاني</div>
+                    <h3>تسوق الآن واحصل على شحن مجاني</h3>
+                    <p>لطلبات فوق 200 ريال</p>
+                </div>
+                <div class="ad-card">
+                    <div class="ad-badge">خصم 30%</div>
+                    <h3>تخفيضات نهاية الموسم</h3>
+                    <p>استفد من عروضنا الحصرية</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- الشريط السفلي -->
+    <nav class="bottom-navbar">
+        <div class="bottom-nav-container">
+            <a href="#home" class="bottom-nav-item active">
                 <i class="fas fa-home"></i>
-                <span>منزل</span>
-            </button>
-            <button class="category-filter" data-category="sports" onclick="filterProducts('sports')">
-                <i class="fas fa-basketball-ball"></i>
-                <span>رياضة</span>
-            </button>
-            <button class="category-filter" data-category="books" onclick="filterProducts('books')">
-                <i class="fas fa-book"></i>
-                <span>كتب</span>
-            </button>
-            <button class="category-filter" data-category="beauty" onclick="filterProducts('beauty')">
-                <i class="fas fa-spa"></i>
-                <span>جمال</span>
-            </button>
+                <span>الرئيسية</span>
+            </a>
+            <a href="#categories" class="bottom-nav-item">
+                <i class="fas fa-th-large"></i>
+                <span>الفئات</span>
+            </a>
+            <a href="#search" class="bottom-nav-item" id="bottomSearchBtn">
+                <i class="fas fa-search"></i>
+                <span>بحث</span>
+            </a>
+            <a href="#cart" class="bottom-nav-item" id="bottomCartBtn">
+                <i class="fas fa-shopping-cart"></i>
+                <span>السلة</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- شريط البحث المنبثق -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content search-modal">
+            <span class="close">&times;</span>
+            <div class="search-container">
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث عن المنتجات...">
+                    <button class="search-btn" onclick="performSearch()">بحث</button>
+                </div>
+            </div>
         </div>
     </div>
-</section>
 
-<!-- تحديث العنوان والوصف -->
-<section class="hero-section">
-    <div class="hero-content">
-        <h1 class="hero-title">اكتشف عالم التسوق</h1>
-        <p class="hero-subtitle">احصل على أفضل المنتجات بأسعار منافسة مع خدمة توصيل سريعة</p>
+    <!-- سلة التسوق -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content cart-modal">
+            <span class="close">&times;</span>
+            <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
+            <div id="cartItems" class="cart-items">
+                <!-- محتويات السلة -->
+            </div>
+            <div class="cart-total">
+                <strong>المجموع: <span id="cartTotal">0.00</span> ريال</strong>
+            </div>
+            <div class="cart-actions">
+                <button class="btn-checkout" onclick="checkout()">إتمام الشراء</button>
+                <button class="btn-clear-cart" onclick="clearCart()">تفريغ السلة</button>
+            </div>
+        </div>
     </div>
-</section>
 
-<!-- تحديث العناوين -->
-<section class="all-apps-section">
-    <div class="section-header">
-        <h2 class="section-title">جميع المنتجات</h2>
+    <!-- نموذج تسجيل الدخول -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</h3>
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="كلمة المرور" required>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                </button>
+            </form>
+            <div id="loginMessage"></div>
+        </div>
     </div>
-    <!-- باقي المحتوى يبقى كما هو -->
-</section>
+
+    <!-- تحميل ملفات JavaScript -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+
+    <script>
+        // إدارة البحث
+        document.getElementById('searchIconTop').addEventListener('click', function() {
+            document.getElementById('searchModal').style.display = 'block';
+        });
+
+        document.getElementById('bottomSearchBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('searchModal').style.display = 'block';
+        });
+
+        // إدارة سلة التسوق
+        document.getElementById('cartIconTop').addEventListener('click', function() {
+            document.getElementById('cartModal').style.display = 'block';
+            updateCartDisplay();
+        });
+
+        document.getElementById('bottomCartBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('cartModal').style.display = 'block';
+            updateCartDisplay();
+        });
+
+        // إغلاق النوافذ المنبثقة
+        document.querySelectorAll('.close').forEach(function(closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                this.closest('.modal').style.display = 'none';
+            });
+        });
+
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+
+        // البحث عند الضغط على Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // التنقل في الشريط السفلي
+        document.querySelectorAll('.bottom-nav-item').forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.bottom-nav-item').forEach(function(i) {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const target = this.getAttribute('href');
+                if (target === '#categories') {
+                    document.querySelector('.categories-section').scrollIntoView({ behavior: 'smooth' });
+                } else if (target === '#search') {
+                    document.getElementById('searchModal').style.display = 'block';
+                } else if (target === '#cart') {
+                    document.getElementById('cartModal').style.display = 'block';
+                    updateCartDisplay();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
