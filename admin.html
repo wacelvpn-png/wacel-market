@@ -270,6 +270,15 @@
     <!-- تحميل ملفات JavaScript -->
     <script src="js/firebase-config.js"></script>
     <script src="js/admin.js"></script>
+
+<script>
+// تحقق من الأخطاء
+window.addEventListener('error', function(e) {
+    console.error('خطأ عام:', e.error);
+    alert('حدث خطأ: ' + e.error);
+});
+</script>
+    
 </body>
 </html>
 [file content end]
