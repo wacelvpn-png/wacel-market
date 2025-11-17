@@ -1,9 +1,9 @@
-// js/app.js - الإصدار المعدل لمتجر المنتجات
+// js/app.js - الإصدار المصحح لمتجر المنتجات
 console.log("تحميل متجر المنتجات...");
 
 let allProducts = [];
 let currentFilter = 'all';
-let visibleProductsCount = 5;
+let visibleProductsCount = 6;
 let currentDisplayedProducts = [];
 
 // بيانات تجريبية للاختبار
@@ -65,23 +65,15 @@ const sampleProducts = [
     }
 ];
 
-// تنسيق التاريخ والوقت للعرض
-function formatDateTime(dateString) {
-    if (!dateString) return 'غير محدد';
-    try {
-        const date = new Date(dateString);
-        const options = { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            calendar: 'gregory'
-        };
-        return date.toLocaleDateString('ar-SA', options);
-    } catch (error) {
-        return 'غير محدد';
-    }
+// تنسيق السعر
+function formatPrice(price) {
+    return new Intl.NumberFormat('ar-YE', {
+        style: 'currency',
+        currency: 'YER'
+    }).format(price);
 }
 
+// تنسيق التاريخ
 function formatDate(dateString) {
     if (!dateString) return 'غير محدد';
     try {
@@ -109,12 +101,7 @@ function goToProductPage(productId) {
     window.location.href = `share.html?product=${productId}`;
 }
 
-// مشاركة المنتج
-async function shareProduct(productId, productName) {
-    goToProductPage(productId);
-}
-
-// تحميل المنتجات من Firebase أو استخدام البيانات التجريبية
+// تحميل المنتجات
 async function loadProducts() {
     try {
         console.log("بدء تحميل المنتجات...");
@@ -126,6 +113,7 @@ async function loadProducts() {
 
         // محاولة التحميل من Firebase
         if (window.firebaseDb) {
+            console.log("جاري التحميل من Firebase...");
             const querySnapshot = await firebaseDb.collection("products").get();
             allProducts = [];
             
@@ -166,18 +154,6 @@ async function loadProducts() {
         console.error("خطأ في تحميل المنتجات:", error);
         
         allProducts = sampleProducts;
-        allProducts.sort((a, b) => {
-            if (a.featured && !b.featured) return -1;
-            if (!a.featured && b.featured) return 1;
-            
-            if (a.trending && !b.trending) return -1;
-            if (!a.trending && b.trending) return 1;
-            
-            const aDate = a.updatedAt || a.createdAt;
-            const bDate = b.updatedAt || b.createdAt;
-            return new Date(bDate) - new Date(aDate);
-        });
-        
         displayProducts(allProducts.slice(0, visibleProductsCount));
         setupLoadMoreButton();
         
@@ -194,7 +170,7 @@ async function loadProducts() {
     }
 }
 
-// عرض المنتجات الرئيسية
+// عرض المنتجات
 function displayProducts(products) {
     const productsContainer = document.getElementById('apps-list');
     currentDisplayedProducts = products;
@@ -217,7 +193,7 @@ function displayProducts(products) {
     productsContainer.innerHTML = html;
     setupDescriptionToggle();
     
-    console.log("تم عرض المنتجات الرئيسية:", products.length);
+    console.log("تم عرض المنتجات:", products.length);
 }
 
 // إنشاء بطاقة منتج
@@ -227,11 +203,11 @@ function createProductCard(product) {
     const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
     
     const productIcon = product.iconURL 
-        ? `<div class="app-icon"><img src="${product.iconURL}" alt="${product.name}" onerror="this.style.display=\\'none\\'; this.parentNode.innerHTML=\\'<i class=\\'${iconClass}\\'></i>\\''"></div>`
+        ? `<div class="app-icon"><img src="${product.iconURL}" alt="${product.name}" onerror="this.style.display='none'; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>'"></div>`
         : `<div class="app-icon"><i class="${iconClass}"></i></div>`;
     
     return `
-        <div class="app-card" data-category="${product.category}" data-id="${product.id}" onclick="goToProductPage('${product.id}')" style="cursor: pointer;">
+        <div class="app-card" data-category="${product.category}" data-id="${product.id}">
             <div class="app-header">
                 ${productIcon}
                 <div class="app-info">
@@ -257,39 +233,20 @@ function createProductCard(product) {
                 </div>
                 <div class="app-downloads">${product.downloads || 0} طلب</div>
             </div>
-            <div class="app-date-info">
-                <div class="date-item">
-                    <i class="fas fa-calendar-plus"></i>
-                    <span>أضيف في: ${formatDate(product.createdAt)}</span>
-                </div>
-            </div>
             ${product.featured ? '<div class="featured-badge">⭐ مميز</div>' : ''}
             ${product.trending ? '<div class="trending-badge">🔥 شائع</div>' : ''}
             <div class="app-actions">
-                <button class="download-btn" onclick="buyProduct('${product.downloadURL}', '${product.id}', '${product.name}', ${product.price}); event.stopPropagation()">
+                <button class="download-btn" onclick="buyProduct('${product.downloadURL}', '${product.id}', '${product.name}', ${product.price})">
                     <i class="fas fa-shopping-cart"></i>
                     شراء الآن
                 </button>
-                <button class="share-btn" onclick="goToProductPage('${product.id}'); event.stopPropagation()">
+                <button class="share-btn" onclick="goToProductPage('${product.id}')">
                     <i class="fas fa-share-alt"></i>
                     مشاركة
                 </button>
-                ${isAdmin() ? `
-                    <button class="delete-btn" onclick="deleteProduct('${product.id}'); event.stopPropagation()">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : ''}
             </div>
         </div>
     `;
-}
-
-// تنسيق السعر
-function formatPrice(price) {
-    return new Intl.NumberFormat('ar-YE', {
-        style: 'currency',
-        currency: 'YER'
-    }).format(price);
 }
 
 // إعداد زر "عرض المزيد"
@@ -307,7 +264,7 @@ function setupLoadMoreButton() {
 
 // عرض المزيد من المنتجات
 function showMoreProducts() {
-    visibleProductsCount += 5;
+    visibleProductsCount += 6;
     const productsToShow = currentFilter === 'all' 
         ? allProducts.slice(0, visibleProductsCount)
         : allProducts.filter(product => product.category === currentFilter).slice(0, visibleProductsCount);
@@ -316,17 +273,11 @@ function showMoreProducts() {
     setupLoadMoreButton();
 }
 
-// تحديث العرض الحالي
-function updateCurrentDisplay() {
-    if (currentDisplayedProducts.length > 0) {
-        displayProducts(currentDisplayedProducts);
-    }
-}
-
 // إضافة مستمعات الأحداث لعرض المزيد
 function setupDescriptionToggle() {
     document.querySelectorAll('.show-more').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
             const description = this.previousElementSibling;
             if (description.classList.contains('expanded')) {
                 description.classList.remove('expanded');
@@ -395,7 +346,7 @@ function filterProducts(category) {
     console.log("تصفية المنتجات حسب الفئة:", category);
     
     currentFilter = category;
-    visibleProductsCount = 5;
+    visibleProductsCount = 6;
     
     document.querySelectorAll('.category-filter').forEach(btn => {
         btn.classList.remove('active');
@@ -410,14 +361,6 @@ function filterProducts(category) {
     
     displayProducts(filteredProducts.slice(0, visibleProductsCount));
     setupLoadMoreButton();
-    
-    const productsList = document.getElementById('apps-list');
-    if (productsList) {
-        productsList.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
 }
 
 // البحث في المنتجات
@@ -431,7 +374,7 @@ function searchProducts() {
     }
     
     if (!searchTerm) {
-        visibleProductsCount = 5;
+        visibleProductsCount = 6;
         displayProducts(allProducts.slice(0, visibleProductsCount));
         setupLoadMoreButton();
         return;
@@ -456,7 +399,7 @@ function searchProducts() {
     }
 }
 
-// البحث المباشر (عند الضغط على Enter)
+// البحث المباشر
 function performSearch() {
     searchProducts();
 }
@@ -468,7 +411,6 @@ function buyProduct(buyURL, productId, productName, productPrice) {
     const product = allProducts.find(product => product.id === productId);
     if (product) {
         product.downloads = (product.downloads || 0) + 1;
-        updateCurrentDisplay();
     }
     
     // فتح رابط واتساب للطلب
@@ -482,32 +424,6 @@ function buyProduct(buyURL, productId, productName, productPrice) {
     }
     
     showTempMessage('جاري فتح واتساب لإكمال الطلب...', 'success');
-}
-
-// حذف المنتج (للمسؤول فقط)
-async function deleteProduct(productId) {
-    if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
-    
-    try {
-        console.log("جاري حذف المنتج:", productId);
-        
-        const product = allProducts.find(product => product.id === productId);
-        if (product && window.firebaseDb && !sampleProducts.some(sample => sample.id === productId)) {
-            await firebaseDb.doc(`products/${productId}`).delete();
-        }
-        
-        allProducts = allProducts.filter(product => product.id !== productId);
-        currentDisplayedProducts = currentDisplayedProducts.filter(product => product.id !== productId);
-        
-        displayProducts(currentDisplayedProducts);
-        setupLoadMoreButton();
-        
-        showTempMessage('تم حذف المنتج بنجاح', 'success');
-        
-    } catch (error) {
-        console.error("خطأ في حذف المنتج:", error);
-        showTempMessage('خطأ في حذف المنتج', 'error');
-    }
 }
 
 // التحقق إذا كان المستخدم مسؤولاً
@@ -531,12 +447,9 @@ function showTempMessage(text, type) {
     document.body.appendChild(messageDiv);
     
     setTimeout(() => {
-        messageDiv.style.animation = 'slideOut 0.3s ease-in';
-        setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.parentNode.removeChild(messageDiv);
-            }
-        }, 300);
+        if (messageDiv.parentNode) {
+            messageDiv.parentNode.removeChild(messageDiv);
+        }
     }, 3000);
 }
 
@@ -586,11 +499,6 @@ function displaySpecialSection(section) {
                 setupDescriptionToggle();
             }
         }
-        
-        sectionElement.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-        });
     }
 }
 
@@ -623,14 +531,14 @@ function setupBottomNavigation() {
     });
 }
 
-// إعداد أحداث الفئات للشريط الأفقي
+// إعداد أحداث الفئات
 function setupCategoryEvents() {
     const categoryFilters = document.querySelectorAll('.category-filter');
     
     categoryFilters.forEach(filter => {
         filter.addEventListener('click', function() {
-            categoryFilters.forEach(f => f.classList.remove('active'));
-            this.classList.add('active');
+            const category = this.dataset.category;
+            filterProducts(category);
         });
     });
 }
@@ -681,7 +589,5 @@ window.filterProducts = filterProducts;
 window.searchProducts = searchProducts;
 window.performSearch = performSearch;
 window.buyProduct = buyProduct;
-window.deleteProduct = deleteProduct;
-window.shareProduct = shareProduct;
 window.displaySpecialSection = displaySpecialSection;
 window.goToProductPage = goToProductPage;
