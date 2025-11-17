@@ -1,5 +1,3 @@
-[file name]: admin.html
-[file content begin]
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -9,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles/style.css">
     <link rel="stylesheet" href="styles/admin.css">
-    <!-- إضافة Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -60,6 +57,22 @@
                     <h3>المخزون</h3>
                     <p id="totalStock">0</p>
                 </div>
+            </div>
+
+            <!-- زر اختبار سريع -->
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="testAddProduct()" class="test-btn" style="
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 14px;
+                ">
+                    <i class="fas fa-vial"></i>
+                    اختبار إضافة منتج تجريبي
+                </button>
             </div>
 
             <!-- نموذج إضافة منتج جديد -->
@@ -147,7 +160,10 @@
                         </div>
                     </div>
                     
-                    <button type="submit" class="submit-btn">إضافة المنتج</button>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-plus"></i>
+                        إضافة المنتج
+                    </button>
                     <div id="formMessage"></div>
                 </form>
             </section>
@@ -168,8 +184,11 @@
     <!-- نافذة التحميل -->
     <div id="loadingModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h3>جاري معالجة الطلب...</h3>
-            <p>يرجى الانتظار</p>
+            <div style="text-align: center;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #3498db; margin-bottom: 1rem;"></i>
+                <h3>جاري معالجة الطلب...</h3>
+                <p>يرجى الانتظار</p>
+            </div>
         </div>
     </div>
 
@@ -262,7 +281,10 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="submit-btn">حفظ التعديلات</button>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-save"></i>
+                    حفظ التعديلات
+                </button>
             </form>
         </div>
     </div>
@@ -271,14 +293,27 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/admin.js"></script>
 
-<script>
-// تحقق من الأخطاء
-window.addEventListener('error', function(e) {
-    console.error('خطأ عام:', e.error);
-    alert('حدث خطأ: ' + e.error);
-});
-</script>
-    
+    <script>
+        // تحقق من تحميل الصفحة والأخطاء
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ تم تحميل صفحة لوحة التحكم');
+            
+            // اختبار بسيط للأنماط
+            const testDiv = document.createElement('div');
+            testDiv.style.cssText = 'background: #28a745; color: white; padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center;';
+            testDiv.innerHTML = '✅ الصفحة تعمل بشكل صحيح - جاهزة لإضافة المنتجات';
+            document.querySelector('.admin-container').prepend(testDiv);
+            
+            setTimeout(() => {
+                testDiv.remove();
+            }, 5000);
+        });
+
+        // التقاط الأخطاء العامة
+        window.addEventListener('error', function(e) {
+            console.error('❌ خطأ عام:', e.error);
+            alert('❌ حدث خطأ: ' + e.message);
+        });
+    </script>
 </body>
 </html>
-[file content end]
