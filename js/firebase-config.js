@@ -1,7 +1,5 @@
-[file name]: firebase-config.js
-[file content begin]
-// js/firebase-config.js - النسخة المعدلة للعمل مع المنتجات
-console.log("تحميل إعدادات Firebase للمتجر الإلكتروني...");
+// js/firebase-config.js - النسخة المحسنة
+console.log("🔥 تحميل إعدادات Firebase للمتجر الإلكتروني...");
 
 // إعدادات Firebase الخاصة بمشروعك
 const firebaseConfig = {
@@ -15,9 +13,10 @@ const firebaseConfig = {
 
 // التحقق من تحميل Firebase SDK
 if (typeof firebase === 'undefined') {
-    console.error("Firebase SDK لم يتم تحميله بشكل صحيح");
+    console.error("❌ Firebase SDK لم يتم تحميله بشكل صحيح");
+    console.log("💡 تأكد من إضافة سكريبت Firebase في head");
 } else {
-    console.log("Firebase SDK محمل بنجاح");
+    console.log("✅ Firebase SDK محمل بنجاح");
 }
 
 // تهيئة Firebase
@@ -27,61 +26,41 @@ try {
     app = firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     auth = firebase.auth();
-    console.log("تم تهيئة Firebase بنجاح للمتجر الإلكتروني");
+    console.log("✅ تم تهيئة Firebase بنجاح للمتجر الإلكتروني");
+    
+    // اختبار الاتصال
+    db.collection("test").get().then(() => {
+        console.log("✅ اتصال Firebase يعمل بشكل صحيح");
+    }).catch(error => {
+        console.warn("⚠️  اتصال Firebase به مشكلة طفيفة:", error.message);
+    });
+    
 } catch (error) {
-    console.error("خطأ في تهيئة Firebase:", error);
+    console.error("❌ خطأ في تهيئة Firebase:", error);
+    console.log("💾 استخدام وضع الاختبار (بدون Firebase)");
+    
     // استخدام قيم افتراضية للاختبار
     app = { name: "[DEFAULT]" };
     db = {
         collection: (name) => ({ 
             get: () => Promise.resolve({ 
-                empty: false, 
-                forEach: (callback) => {
-                    // بيانات تجريبية للمنتجات
-                    const sampleProducts = [
-                        {
-                            id: '1',
-                            name: 'ساعة ذكية',
-                            description: 'ساعة ذكية متطورة مع شاشة AMOLED ومقاومة للماء',
-                            price: 299.99,
-                            originalPrice: 399.99,
-                            category: 'electronics',
-                            images: ['https://example.com/watch1.jpg'],
-                            stock: 15,
-                            rating: 4.5,
-                            sales: 150,
-                            featured: true,
-                            trending: true,
-                            discount: 25,
-                            brand: 'Samsung'
-                        },
-                        {
-                            id: '2',
-                            name: 'حذاء رياضي',
-                            description: 'حذاء رياضي مريح مصمم للركض والتمارين الرياضية',
-                            price: 199.99,
-                            originalPrice: 249.99,
-                            category: 'sports',
-                            images: ['https://example.com/shoes1.jpg'],
-                            stock: 30,
-                            rating: 4.2,
-                            sales: 89,
-                            trending: true,
-                            discount: 20,
-                            brand: 'Nike'
-                        }
-                    ];
-                    sampleProducts.forEach(product => callback({ 
-                        id: product.id, 
-                        data: () => product 
-                    }));
-                }
+                empty: true, 
+                forEach: () => {} 
             }),
-            add: (data) => Promise.resolve({ id: 'product-' + Date.now() })
+            add: (data) => {
+                console.log("💾 محاكاة إضافة مستند إلى:", name, data);
+                return Promise.resolve({ id: 'local-' + Date.now() });
+            }
         }),
         doc: (path) => ({ 
-            delete: () => Promise.resolve(),
-            update: (data) => Promise.resolve()
+            delete: () => {
+                console.log("💾 محاكاة حذف مستند:", path);
+                return Promise.resolve();
+            },
+            update: (data) => {
+                console.log("💾 محاكاة تحديث مستند:", path, data);
+                return Promise.resolve();
+            }
         })
     };
     auth = {
@@ -94,15 +73,17 @@ try {
                     }
                 });
             }
-            return Promise.reject({ code: 'auth/wrong-password' });
+            return Promise.reject({ code: 'auth/wrong-password', message: 'كلمة المرور خاطئة' });
         },
         signOut: () => Promise.resolve(),
         onAuthStateChanged: (callback) => {
-            // محاكاة حالة المستخدم
-            setTimeout(() => callback({
-                uid: 'test-user-id',
-                email: 'admin@wacelmarkt.com'
-            }), 1000);
+            // محاكاة حالة المستخدم المسجل
+            const user = localStorage.getItem('user');
+            if (user) {
+                setTimeout(() => callback(JSON.parse(user)), 100);
+            } else {
+                setTimeout(() => callback(null), 100);
+            }
             return () => {};
         }
     };
@@ -113,24 +94,4 @@ window.firebaseApp = app;
 window.firebaseDb = db;
 window.firebaseAuth = auth;
 
-console.log("تم تحميل إعدادات Firebase بنجاح للمتجر الإلكتروني");
-[file content end]
-
-
-
-// في نهاية firebase-config.js
-console.log("🔍 التحقق من إعدادات Firebase...");
-
-// اختبار اتصال Firebase
-if (window.firebaseDb) {
-    console.log("✅ Firebase متصل");
-    
-    // اختبار بسيط للاتصال
-    firebaseDb.collection("test").get().then(() => {
-        console.log("✅ اتصال Firebase يعمل بشكل صحيح");
-    }).catch(error => {
-        console.error("❌ خطأ في اتصال Firebase:", error);
-    });
-} else {
-    console.log("⚠️  استخدام وضع الاختبار (بدون Firebase)");
-}
+console.log("✅ تم تحميل إعدادات Firebase بنجاح للمتجر الإلكتروني");
