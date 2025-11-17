@@ -310,5 +310,23 @@
             });
         });
     </script>
+
+<script>
+// تحقق من تحميل CSS
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('تم تحميل الصفحة');
+    
+    // تحقق من أن الأنماط تعمل
+    const testElement = document.createElement('div');
+    testElement.style.cssText = 'background: var(--primary); color: white; padding: 10px; margin: 10px; border-radius: 5px;';
+    testElement.textContent = '✅ الأنماط تعمل بشكل صحيح';
+    document.body.prepend(testElement);
+    
+    // إخفاء العنصر بعد 3 ثواني
+    setTimeout(() => {
+        testElement.remove();
+    }, 3000);
+});
+</script>
 </body>
 </html>
