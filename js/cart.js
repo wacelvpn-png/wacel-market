@@ -148,3 +148,16 @@ function updateCartCount() {
 document.addEventListener('DOMContentLoaded', function() {
     updateCartCount();
 });
+
+
+
+// إتمام الشراء - النسخة المحدثة
+function checkout() {
+    if (cart.length === 0) {
+        showTempMessage('سلة التسوق فارغة', 'error');
+        return;
+    }
+    
+    // التوجيه إلى صفحة الدفع الفعلية
+    window.location.href = 'checkout.html';
+}
