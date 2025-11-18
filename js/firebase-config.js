@@ -95,3 +95,49 @@ window.firebaseDb = db;
 window.firebaseAuth = auth;
 
 console.log("✅ تم تحميل إعدادات Firebase بنجاح للمتجر الإلكتروني");
+
+
+
+// في firebase-config.js - تأكد من وجود هذا الكود
+db = {
+    collection: (name) => ({ 
+        get: () => Promise.resolve({ 
+            empty: false, 
+            forEach: (callback) => {
+                // بيانات تجريبية للمنتجات
+                const sampleProducts = [
+                    {
+                        id: '1',
+                        name: 'ساعة ذكية',
+                        description: 'ساعة ذكية متطورة',
+                        price: 299.99,
+                        category: 'electronics',
+                        images: ['https://via.placeholder.com/300x300?text=ساعة+ذكية'],
+                        stock: 15
+                    },
+                    {
+                        id: '2', 
+                        name: 'حذاء رياضي',
+                        description: 'حذاء رياضي مريح',
+                        price: 199.99,
+                        category: 'sports',
+                        images: ['https://via.placeholder.com/300x300?text=حذاء+رياضي'],
+                        stock: 30
+                    }
+                ];
+                sampleProducts.forEach(product => callback({ 
+                    id: product.id, 
+                    data: () => product 
+                }));
+            }
+        }),
+        doc: (id) => ({
+            get: () => Promise.resolve({
+                exists: true,
+                data: () => sampleProducts.find(p => p.id === id) || sampleProducts[0]
+            })
+        }),
+        add: (data) => Promise.resolve({ id: 'product-' + Date.now() })
+    })
+};
+
