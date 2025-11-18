@@ -485,7 +485,7 @@
     </div>
 
     <script>
-        // تحميل محتويات السلة
+        // تحميل محتويات السلة - الإصدار المصحح
         function loadCartItems() {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const orderItems = document.getElementById('orderItems');
@@ -501,14 +501,17 @@
             let itemsHTML = '';
             
             cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
+                // التأكد من أن السعر والكمية أرقام صحيحة
+                const price = parseFloat(item.price) || 0;
+                const quantity = parseInt(item.quantity) || 0;
+                const itemTotal = price * quantity;
                 total += itemTotal;
                 
                 itemsHTML += `
                     <div class="order-item">
                         <div>
                             <strong>${item.name}</strong>
-                            <div>الكمية: ${item.quantity} × ${item.price} ر.س</div>
+                            <div>الكمية: ${quantity} × ${price.toFixed(2)} ر.س</div>
                         </div>
                         <div>${itemTotal.toFixed(2)} ر.س</div>
                     </div>
@@ -546,7 +549,7 @@
             }
         }
         
-        // إنشاء رسالة واتساب مع رابط المنتج
+        // إنشاء رسالة واتساب مع رابط المنتج - الإصدار المصحح
         function createWhatsAppMessage(formData, cart) {
             let message = `🛒 طلب جديد من وسيل ماركت\n\n`;
             message += `👤 معلومات العميل:\n`;
@@ -577,9 +580,12 @@
             let productLinks = [];
             
             cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
+                // التأكد من أن السعر والكمية أرقام صحيحة
+                const price = parseFloat(item.price) || 0;
+                const quantity = parseInt(item.quantity) || 0;
+                const itemTotal = price * quantity;
                 total += itemTotal;
-                message += `- ${item.name} (${item.quantity} × ${item.price}) = ${itemTotal.toFixed(2)} ر.س\n`;
+                message += `- ${item.name} (${quantity} × ${price.toFixed(2)}) = ${itemTotal.toFixed(2)} ر.س\n`;
                 
                 // إنشاء رابط المنتج
                 let productUrl;
@@ -619,9 +625,6 @@
             
             // فتح واتساب في نافذة جديدة
             window.open(whatsappUrl, '_blank', 'width=600,height=700');
-            
-            // بديل: فتح واتساب في نفس النافذة
-            // window.location.href = whatsappUrl;
         }
         
         // الحصول على رابط المنتج من السلة
@@ -697,6 +700,7 @@
             }
             
             console.log('بيانات الطلب:', formData);
+            console.log('محتويات السلة:', cart);
             
             // إنشاء رسالة واتساب
             const whatsappMessage = createWhatsAppMessage(formData, cart);
@@ -710,13 +714,30 @@
             setTimeout(() => {
                 localStorage.removeItem('cart');
                 showTempMessage('✅ تم تفريغ سلة التسوق', 'success');
+                
+                // إعادة تحميل الصفحة لتحديث المجموع
+                setTimeout(() => {
+                    loadCartItems();
+                }, 500);
             }, 3000);
         });
         
         // تحميل العناصر عند فتح الصفحة
         document.addEventListener('DOMContentLoaded', function() {
+            console.log("🚀 بدء تحميل صفحة الدفع...");
             loadCartItems();
             setupPaymentMethods();
+            
+            // اختبار محتويات السلة
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            console.log("🛒 محتويات السلة:", cart);
+            
+            if (cart.length > 0) {
+                console.log("📊 تفاصيل المنتجات:");
+                cart.forEach((item, index) => {
+                    console.log(`  ${index + 1}. ${item.name}: السعر=${item.price}, الكمية=${item.quantity}`);
+                });
+            }
         });
     </script>
 </body>
