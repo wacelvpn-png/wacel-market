@@ -546,7 +546,7 @@
             }
         }
         
-        // إنشاء رسالة واتساب
+        // إنشاء رسالة واتساب مع رابط المنتج
         function createWhatsAppMessage(formData, cart) {
             let message = `🛒 طلب جديد من وسيل ماركت\n\n`;
             message += `👤 معلومات العميل:\n`;
@@ -574,13 +574,36 @@
             
             message += `\n🛍️ المنتجات:\n`;
             let total = 0;
+            let productLinks = [];
+            
             cart.forEach(item => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
                 message += `- ${item.name} (${item.quantity} × ${item.price}) = ${itemTotal.toFixed(2)} ر.س\n`;
+                
+                // إنشاء رابط المنتج
+                let productUrl;
+                if (item.id && window.location.hostname !== '') {
+                    // إذا كان هناك معرف منتج ونحن على النطاق الحقيقي
+                    productUrl = `${window.location.origin}/share.html?product=${item.id}`;
+                } else {
+                    // رابط افتراضي للمنتج
+                    productUrl = `https://wacelmarkt.com/share.html?product=${item.id || 'unknown'}`;
+                }
+                productLinks.push(`${item.name}: ${productUrl}`);
             });
             
             message += `\n💰 المجموع الكلي: ${total.toFixed(2)} ر.س\n\n`;
+            
+            // إضافة روابط المنتجات
+            if (productLinks.length > 0) {
+                message += `🔗 روابط المنتجات:\n`;
+                productLinks.forEach(link => {
+                    message += `${link}\n`;
+                });
+                message += `\n`;
+            }
+            
             message += `⏰ وقت الطلب: ${new Date().toLocaleString('ar-YE')}\n`;
             message += `🆔 رقم الطلب: #${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
             
@@ -592,6 +615,25 @@
             const phoneNumber = '+967735981122';
             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
             window.open(whatsappUrl, '_blank');
+        }
+        
+        // الحصول على رابط المنتج من السلة
+        function getProductLinksFromCart() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            let links = [];
+            
+            cart.forEach(item => {
+                if (item.id) {
+                    // إنشاء رابط المنتج بناءً على معرفه
+                    const productUrl = `${window.location.origin}/share.html?product=${item.id}`;
+                    links.push({
+                        name: item.name,
+                        url: productUrl
+                    });
+                }
+            });
+            
+            return links;
         }
         
         // عرض رسالة مؤقتة
