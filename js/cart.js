@@ -1,13 +1,20 @@
-// js/cart.js - إدارة سلة التسوق
+// js/cart.js - الإصدار المصحح بالكامل
+console.log("🔄 تحميل نظام سلة التسوق المصحح...");
+
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-// إضافة منتج إلى السلة
+// إضافة منتج إلى السلة - الإصدار المصحح
 function addToCart(product) {
+    // التأكد من أن السعر والكمية أرقام
+    const price = parseFloat(product.price) || 0;
+    const stock = parseInt(product.stock) || 0;
+    
     const existingItem = cart.find(item => item.id === product.id);
     
     if (existingItem) {
-        if (existingItem.quantity < product.stock) {
-            existingItem.quantity += 1;
+        const currentQuantity = parseInt(existingItem.quantity) || 0;
+        if (currentQuantity < stock) {
+            existingItem.quantity = currentQuantity + 1;
         } else {
             showTempMessage('الكمية المتاحة غير كافية', 'error');
             return;
@@ -15,6 +22,8 @@ function addToCart(product) {
     } else {
         cart.push({
             ...product,
+            price: price,
+            stock: stock,
             quantity: 1
         });
     }
@@ -24,7 +33,7 @@ function addToCart(product) {
     showTempMessage('تم إضافة المنتج إلى السلة', 'success');
 }
 
-// تحديث عرض السلة
+// تحديث عرض السلة - الإصدار المصحح
 function updateCartDisplay() {
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
@@ -41,7 +50,10 @@ function updateCartDisplay() {
     let itemsHTML = '';
     
     cart.forEach(item => {
-        const itemTotal = item.price * item.quantity;
+        // التأكد من أن السعر والكمية أرقام
+        const price = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
+        const itemTotal = price * quantity;
         total += itemTotal;
         
         itemsHTML += `
@@ -54,11 +66,11 @@ function updateCartDisplay() {
                 </div>
                 <div class="cart-item-info">
                     <h5>${item.name}</h5>
-                    <div class="cart-item-price">${item.price} ر.س</div>
+                    <div class="cart-item-price">${price.toFixed(2)} ر.س</div>
                 </div>
                 <div class="cart-item-controls">
                     <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
-                    <span class="quantity">${item.quantity}</span>
+                    <span class="quantity">${quantity}</span>
                     <button class="quantity-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
                     <button class="remove-btn" onclick="removeFromCart('${item.id}')">
                         <i class="fas fa-trash"></i>
@@ -73,15 +85,17 @@ function updateCartDisplay() {
     if (cartTotal) cartTotal.textContent = total.toFixed(2);
 }
 
-// تحديث كمية المنتج
+// تحديث كمية المنتج - الإصدار المصحح
 function updateQuantity(productId, change) {
     const item = cart.find(item => item.id === productId);
     if (item) {
-        const newQuantity = item.quantity + change;
+        const currentQuantity = parseInt(item.quantity) || 0;
+        const stock = parseInt(item.stock) || 0;
+        const newQuantity = currentQuantity + change;
         
         if (newQuantity < 1) {
             removeFromCart(productId);
-        } else if (newQuantity > item.stock) {
+        } else if (newQuantity > stock) {
             showTempMessage('الكمية المتاحة غير كافية', 'error');
         } else {
             item.quantity = newQuantity;
@@ -114,29 +128,37 @@ function clearCart() {
     }
 }
 
-// إتمام الشراء
+// إتمام الشراء - الإصدار المصحح
 function checkout() {
     if (cart.length === 0) {
         showTempMessage('سلة التسوق فارغة', 'error');
         return;
     }
     
-    // هنا يمكنك إضافة منطق إتمام الشراء
-    // مثل التوجيه إلى صفحة الدفع أو فتح نموذج الدفع
-    
-    alert('سيتم توجيهك إلى صفحة الدفع...');
-    // window.location.href = 'checkout.html';
+    // التوجيه إلى صفحة الدفع
+    window.location.href = 'checkout.html';
 }
 
-// حفظ السلة في localStorage
+// حفظ السلة في localStorage - الإصدار المصحح
 function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    // التأكد من أن جميع البيانات رقمية قبل الحفظ
+    const cartToSave = cart.map(item => ({
+        ...item,
+        price: parseFloat(item.price) || 0,
+        quantity: parseInt(item.quantity) || 0,
+        stock: parseInt(item.stock) || 0
+    }));
+    
+    localStorage.setItem('cart', JSON.stringify(cartToSave));
 }
 
-// تحديث عداد السلة
+// تحديث عداد السلة - الإصدار المصحح
 function updateCartCount() {
     const cartCount = document.querySelector('.cart-count');
-    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+    const totalItems = cart.reduce((total, item) => {
+        const quantity = parseInt(item.quantity) || 0;
+        return total + quantity;
+    }, 0);
     
     if (cartCount) {
         cartCount.textContent = totalItems;
@@ -144,20 +166,76 @@ function updateCartCount() {
     }
 }
 
-// التهيئة
+// الحصول على أيقونة المنتج
+function getProductIcon(category) {
+    const icons = {
+        'electronics': 'fas fa-laptop',
+        'fashion': 'fas fa-tshirt',
+        'home': 'fas fa-home',
+        'beauty': 'fas fa-spa',
+        'sports': 'fas fa-running',
+        'books': 'fas fa-book',
+        'food': 'fas fa-utensils',
+        'health': 'fas fa-heartbeat'
+    };
+    return icons[category] || 'fas fa-shopping-bag';
+}
+
+// عرض رسالة مؤقتة
+function showTempMessage(text, type) {
+    // إزالة أي رسائل سابقة
+    const existingMessages = document.querySelectorAll('.temp-message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `temp-message ${type}`;
+    messageDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i>
+        <span>${text}</span>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// التهيئة المحسنة
 document.addEventListener('DOMContentLoaded', function() {
-    updateCartCount();
-});
-
-
-
-// إتمام الشراء - النسخة المحدثة
-function checkout() {
-    if (cart.length === 0) {
-        showTempMessage('سلة التسوق فارغة', 'error');
-        return;
+    console.log("🔄 تهيئة سلة التسوق...");
+    
+    // تحميل السلة من localStorage
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+        try {
+            cart = JSON.parse(savedCart);
+            // التأكد من أن البيانات رقمية
+            cart = cart.map(item => ({
+                ...item,
+                price: parseFloat(item.price) || 0,
+                quantity: parseInt(item.quantity) || 0,
+                stock: parseInt(item.stock) || 0
+            }));
+        } catch (error) {
+            console.error("❌ خطأ في تحميل سلة التسوق:", error);
+            cart = [];
+        }
     }
     
-    // التوجيه إلى صفحة الدفع الفعلية
-    window.location.href = 'checkout.html';
-}
+    updateCartCount();
+    console.log("✅ تم تحميل سلة التسوق:", cart);
+});
+
+// جعل الدوال متاحة عالمياً
+window.addToCart = addToCart;
+window.updateCartDisplay = updateCartDisplay;
+window.updateQuantity = updateQuantity;
+window.removeFromCart = removeFromCart;
+window.clearCart = clearCart;
+window.checkout = checkout;
