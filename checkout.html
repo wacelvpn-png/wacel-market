@@ -9,18 +9,235 @@
     <style>
         .checkout-container {
             max-width: 800px;
-            margin: 50px auto;
+            margin: 0 auto;
             padding: 20px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+        
         .checkout-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .checkout-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .checkout-steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 0;
+            left: 0;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+        
+        .step {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: #e2e8f0;
+            color: #64748b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+        
+        .step.active .step-number {
+            background: #10b981;
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: #10b981;
+            color: white;
+        }
+        
+        .step.completed .step-number::after {
+            content: '✓';
+        }
+        
+        .checkout-form {
+            margin-bottom: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .form-section h3 {
+            margin-bottom: 20px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .order-summary {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 30px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-top: 2px solid #e2e8f0;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        
+        .checkout-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+        }
+        
+        .btn-back {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 15px 30px;
             border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            background: #4b5563;
+        }
+        
+        .btn-confirm {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkout-actions {
+                flex-direction: column;
+            }
+            
+            .checkout-steps {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .checkout-steps::before {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- الشريط العلوي -->
     <nav class="top-navbar">
         <div class="nav-container">
             <div class="logo-section">
@@ -31,12 +248,184 @@
         </div>
     </nav>
 
+    <!-- محتوى صفحة الدفع -->
     <div class="checkout-container">
         <div class="checkout-card">
-            <h1>إتمام الشراء</h1>
-            <p>هذه صفحة الدفع. يمكنك تطويرها بشكل كامل لاستكمال عملية الشراء.</p>
-            <button onclick="window.history.back()" class="btn">العودة</button>
+            <div class="checkout-header">
+                <h1><i class="fas fa-shopping-cart"></i> إتمام عملية الشراء</h1>
+                <p>أكمل بيانات الطلب لتوصيل المنتجات إليك</p>
+            </div>
+            
+            <div class="checkout-steps">
+                <div class="step completed">
+                    <div class="step-number">1</div>
+                    <div>السلة</div>
+                </div>
+                <div class="step active">
+                    <div class="step-number">2</div>
+                    <div>الدفع</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>التأكيد</div>
+                </div>
+            </div>
+            
+            <form class="checkout-form" id="checkoutForm">
+                <div class="form-section">
+                    <h3><i class="fas fa-user"></i> معلومات العميل</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName">الاسم الكامل *</label>
+                            <input type="text" id="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">رقم الجوال *</label>
+                            <input type="tel" id="phone" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني</label>
+                        <input type="email" id="email">
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> عنوان التوصيل</h3>
+                    <div class="form-group">
+                        <label for="city">المدينة *</label>
+                        <select id="city" required>
+                            <option value="">اختر المدينة</option>
+                            <option value="riyadh">الرياض</option>
+                            <option value="jeddah">جدة</option>
+                            <option value="dammam">الدمام</option>
+                            <option value="mecca">مكة المكرمة</option>
+                            <option value="medina">المدينة المنورة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">العنوان التفصيلي *</label>
+                        <textarea id="address" rows="3" required style="width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-credit-card"></i> طريقة الدفع</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="payment" value="card" checked> 
+                            💳 الدفع بالبطاقة الإئتمانية
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="payment" value="applepay"> 
+                            📱 Apple Pay
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="payment" value="cash"> 
+                            💵 الدفع نقداً عند الاستلام
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="order-summary">
+                    <h3><i class="fas fa-receipt"></i> ملخص الطلب</h3>
+                    <div id="orderItems">
+                        <!-- سيتم تعبئة العناصر هنا -->
+                    </div>
+                    <div class="order-total">
+                        <span>المجموع الكلي:</span>
+                        <span id="orderTotal">0.00 ر.س</span>
+                    </div>
+                </div>
+                
+                <div class="checkout-actions">
+                    <button type="button" class="btn-back" onclick="goBackToStore()">
+                        <i class="fas fa-arrow-right"></i>
+                        العودة للمتجر
+                    </button>
+                    <button type="submit" class="btn-confirm">
+                        <i class="fas fa-lock"></i>
+                        تأكيد الطلب والدفع
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+
+    <script>
+        // تحميل محتويات السلة
+        function loadCartItems() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const orderItems = document.getElementById('orderItems');
+            const orderTotal = document.getElementById('orderTotal');
+            
+            if (cart.length === 0) {
+                orderItems.innerHTML = '<p>السلة فارغة</p>';
+                orderTotal.textContent = '0.00 ر.س';
+                return;
+            }
+            
+            let total = 0;
+            let itemsHTML = '';
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                itemsHTML += `
+                    <div class="order-item">
+                        <div>
+                            <strong>${item.name}</strong>
+                            <div>الكمية: ${item.quantity}</div>
+                        </div>
+                        <div>${itemTotal.toFixed(2)} ر.س</div>
+                    </div>
+                `;
+            });
+            
+            orderItems.innerHTML = itemsHTML;
+            orderTotal.textContent = total.toFixed(2) + ' ر.س';
+        }
+        
+        // العودة إلى المتجر
+        function goBackToStore() {
+            window.location.href = 'index.html';
+        }
+        
+        // معالجة نموذج الدفع
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                city: document.getElementById('city').value,
+                address: document.getElementById('address').value,
+                payment: document.querySelector('input[name="payment"]:checked').value
+            };
+            
+            // هنا يمكنك إضافة منطق إرسال البيانات إلى الخادم
+            console.log('بيانات الطلب:', formData);
+            
+            // عرض رسالة نجاح
+            alert('✅ تم تأكيد طلبك بنجاح! رقم الطلب: #' + Math.random().toString(36).substr(2, 9).toUpperCase());
+            
+            // تفريغ السلة
+            localStorage.removeItem('cart');
+            
+            // التوجيه إلى الصفحة الرئيسية
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        });
+        
+        // تحميل العناصر عند فتح الصفحة
+        document.addEventListener('DOMContentLoaded', loadCartItems);
+    </script>
 </body>
 </html>
