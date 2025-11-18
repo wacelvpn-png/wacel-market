@@ -1,5 +1,5 @@
-// js/products.js - متجر المنتجات الإلكتروني
-console.log("تحميل متجر المنتجات...");
+// js/products.js - الإصدار المحدث مع نظام المشاركة
+console.log("🔄 تحميل متجر المنتجات مع نظام المشاركة...");
 
 let allProducts = [];
 let currentFilter = 'all';
@@ -15,7 +15,7 @@ const sampleProducts = [
         price: 299.99,
         originalPrice: 399.99,
         category: 'electronics',
-        images: ['https://example.com/watch1.jpg'],
+        images: ['https://via.placeholder.com/300x300?text=ساعة+ذكية'],
         stock: 15,
         rating: 4.5,
         sales: 150,
@@ -38,7 +38,7 @@ const sampleProducts = [
         price: 199.99,
         originalPrice: 249.99,
         category: 'sports',
-        images: ['https://example.com/shoes1.jpg'],
+        images: ['https://via.placeholder.com/300x300?text=حذاء+رياضي'],
         stock: 30,
         rating: 4.2,
         sales: 89,
@@ -52,33 +52,13 @@ const sampleProducts = [
         },
         createdAt: new Date('2024-03-14').toISOString(),
         updatedAt: new Date('2024-03-14').toISOString()
-    },
-    {
-        id: '3',
-        name: 'سماعات لاسلكية',
-        description: 'سماعات رأس لاسلكية مع إلغاء الضوضاء النشط وجودة صوت عالية الدقة.',
-        price: 449.99,
-        category: 'electronics',
-        images: ['https://example.com/headphones1.jpg'],
-        stock: 20,
-        rating: 4.7,
-        sales: 67,
-        featured: true,
-        brand: 'Sony',
-        specifications: {
-            'البطارية': '30 ساعة',
-            'الإلغاء': 'ضجيج نشط',
-            'الاتصال': 'بلوتوث 5.0'
-        },
-        createdAt: new Date('2024-03-13').toISOString(),
-        updatedAt: new Date('2024-03-13').toISOString()
     }
 ];
 
 // تحميل المنتجات
 async function loadProducts() {
     try {
-        console.log("بدء تحميل المنتجات...");
+        console.log("🔄 بدء تحميل المنتجات...");
         
         const productsContainer = document.getElementById('products-list');
         if (productsContainer) {
@@ -86,7 +66,8 @@ async function loadProducts() {
         }
 
         // محاولة التحميل من Firebase
-        if (window.firebaseDb) {
+        if (window.firebaseDb && typeof firebaseDb.collection === 'function') {
+            console.log("🔥 جاري تحميل المنتجات من Firebase...");
             const querySnapshot = await firebaseDb.collection("products").get();
             allProducts = [];
             
@@ -97,14 +78,14 @@ async function loadProducts() {
                         ...doc.data()
                     });
                 });
-                console.log("تم تحميل المنتجات من Firebase:", allProducts.length);
+                console.log("✅ تم تحميل المنتجات من Firebase:", allProducts.length);
             } else {
                 allProducts = sampleProducts;
-                console.log("تم استخدام البيانات التجريبية:", allProducts.length);
+                console.log("📝 استخدام البيانات التجريبية:", allProducts.length);
             }
         } else {
             allProducts = sampleProducts;
-            console.log("استخدام البيانات التجريبية (Firebase غير متوفر):", allProducts.length);
+            console.log("💾 استخدام البيانات التجريبية (Firebase غير متوفر):", allProducts.length);
         }
         
         // الترتيب: المميزة أولاً، ثم الأكثر مبيعاً، ثم المحدثة حديثاً
@@ -124,7 +105,7 @@ async function loadProducts() {
         setupLoadMoreButton();
         
     } catch (error) {
-        console.error("خطأ في تحميل المنتجات:", error);
+        console.error("❌ خطأ في تحميل المنتجات:", error);
         
         allProducts = sampleProducts;
         displayProducts(allProducts.slice(0, visibleProductsCount));
@@ -149,7 +130,7 @@ function displayProducts(products) {
     currentDisplayedProducts = products;
     
     if (!productsContainer) {
-        console.error("لم يتم العثور على عنصر products-list");
+        console.error("❌ لم يتم العثور على عنصر products-list");
         return;
     }
     
@@ -166,7 +147,7 @@ function displayProducts(products) {
     productsContainer.innerHTML = html;
     setupDescriptionToggle();
     
-    console.log("تم عرض المنتجات:", products.length);
+    console.log("✅ تم عرض المنتجات:", products.length);
 }
 
 // إنشاء بطاقة منتج
@@ -240,6 +221,19 @@ function createProductCard(product) {
     `;
 }
 
+// مشاركة المنتج - الانتقال إلى صفحة المشاركة
+function shareProduct(productId) {
+    console.log("📤 مشاركة المنتج:", productId);
+    
+    const product = allProducts.find(p => p.id === productId);
+    if (product) {
+        // الانتقال إلى صفحة مشاركة المنتج
+        window.location.href = `share.html?product=${productId}`;
+    } else {
+        showTempMessage('❌ المنتج غير موجود', 'error');
+    }
+}
+
 // الحصول على أيقونة المنتج حسب التصنيف
 function getProductIcon(category) {
     const icons = {
@@ -270,9 +264,99 @@ function getCategoryName(category) {
     return categories[category] || category;
 }
 
+// توليد نجوم التقييم
+function generateRatingStars(rating) {
+    if (!rating) return '<span style="color: var(--text-light);">غير مقيم</span>';
+    
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    
+    let stars = '';
+    
+    for (let i = 0; i < fullStars; i++) {
+        stars += '<i class="fas fa-star"></i>';
+    }
+    
+    if (halfStar) {
+        stars += '<i class="fas fa-star-half-alt"></i>';
+    }
+    
+    for (let i = 0; i < emptyStars; i++) {
+        stars += '<i class="far fa-star"></i>';
+    }
+    
+    return stars;
+}
+
+// إضافة المنتج إلى السلة
+function addToCart(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (product && product.stock > 0) {
+        // استدعاء دالة addToCart من cart.js
+        if (typeof window.addToCart === 'function') {
+            window.addToCart(product);
+            showTempMessage('✅ تم إضافة المنتج إلى السلة', 'success');
+        } else {
+            showTempMessage('❌ نظام السلة غير متاح', 'error');
+        }
+    } else {
+        showTempMessage('❌ المنتج غير متوفر', 'error');
+    }
+}
+
+// شراء سريع
+function buyNow(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (product && product.stock > 0) {
+        if (typeof window.addToCart === 'function') {
+            window.addToCart(product);
+            // فتح سلة التسوق
+            const cartModal = document.getElementById('cartModal');
+            if (cartModal) {
+                cartModal.style.display = 'block';
+                if (typeof window.updateCartDisplay === 'function') {
+                    window.updateCartDisplay();
+                }
+            }
+        } else {
+            showTempMessage('❌ نظام السلة غير متاح', 'error');
+        }
+    } else {
+        showTempMessage('❌ المنتج غير متوفر', 'error');
+    }
+}
+
+// إعداد زر "عرض المزيد"
+function setupLoadMoreButton() {
+    const loadMoreContainer = document.getElementById('load-more-container');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    
+    const totalProducts = currentFilter === 'all' ? allProducts.length : 
+        allProducts.filter(product => product.category === currentFilter).length;
+    
+    if (totalProducts > visibleProductsCount) {
+        if (loadMoreContainer) loadMoreContainer.style.display = 'block';
+        if (loadMoreBtn) loadMoreBtn.onclick = showMoreProducts;
+    } else {
+        if (loadMoreContainer) loadMoreContainer.style.display = 'none';
+    }
+}
+
+// عرض المزيد من المنتجات
+function showMoreProducts() {
+    visibleProductsCount += 8;
+    const productsToShow = currentFilter === 'all' 
+        ? allProducts.slice(0, visibleProductsCount)
+        : allProducts.filter(product => product.category === currentFilter).slice(0, visibleProductsCount);
+    
+    displayProducts(productsToShow);
+    setupLoadMoreButton();
+}
+
 // تصفية المنتجات حسب الفئة
 function filterProducts(category) {
-    console.log("تصفية المنتجات حسب الفئة:", category);
+    console.log("🔍 تصفية المنتجات حسب الفئة:", category);
     
     currentFilter = category;
     visibleProductsCount = 8;
@@ -303,7 +387,7 @@ function filterProducts(category) {
 // البحث في المنتجات
 function searchProducts() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-    console.log("البحث عن:", searchTerm);
+    console.log("🔍 البحث عن:", searchTerm);
     
     const searchModal = document.getElementById('searchModal');
     if (searchModal) {
@@ -335,103 +419,6 @@ function searchProducts() {
         resultsHeader.innerHTML = `<p>عرض ${filteredProducts.length} نتيجة للبحث عن: "${searchTerm}"</p>`;
         productsContainer.insertBefore(resultsHeader, productsContainer.firstChild);
     }
-}
-
-// إضافة المنتج إلى السلة
-function addToCart(productId) {
-    const product = allProducts.find(p => p.id === productId);
-    if (product && product.stock > 0) {
-        addToCart(product);
-        showTempMessage('تم إضافة المنتج إلى السلة', 'success');
-    } else {
-        showTempMessage('المنتج غير متوفر', 'error');
-    }
-}
-
-// شراء سريع
-function buyNow(productId) {
-    const product = allProducts.find(p => p.id === productId);
-    if (product && product.stock > 0) {
-        addToCart(product);
-        document.getElementById('cartModal').style.display = 'block';
-        updateCartDisplay();
-    } else {
-        showTempMessage('المنتج غير متوفر', 'error');
-    }
-}
-
-// مشاركة المنتج
-function shareProduct(productId) {
-    const product = allProducts.find(p => p.id === productId);
-    if (product) {
-        const shareUrl = `${window.location.origin}${window.location.pathname}?product=${productId}`;
-        const shareText = `اكتشف هذا المنتج الرائع: ${product.name} - ${product.price} ر.س`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: product.name,
-                text: shareText,
-                url: shareUrl
-            });
-        } else {
-            // Fallback for browsers that don't support Web Share API
-            navigator.clipboard.writeText(shareUrl).then(() => {
-                showTempMessage('تم نسخ رابط المشاركة', 'success');
-            });
-        }
-    }
-}
-
-// توليد نجوم التقييم
-function generateRatingStars(rating) {
-    if (!rating) return '<span style="color: var(--text-light);">غير مقيم</span>';
-    
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-    
-    let stars = '';
-    
-    for (let i = 0; i < fullStars; i++) {
-        stars += '<i class="fas fa-star"></i>';
-    }
-    
-    if (halfStar) {
-        stars += '<i class="fas fa-star-half-alt"></i>';
-    }
-    
-    for (let i = 0; i < emptyStars; i++) {
-        stars += '<i class="far fa-star"></i>';
-    }
-    
-    return stars;
-}
-
-// إعداد زر "عرض المزيد"
-function setupLoadMoreButton() {
-    const loadMoreContainer = document.getElementById('load-more-container');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    
-    const totalProducts = currentFilter === 'all' ? allProducts.length : 
-        allProducts.filter(product => product.category === currentFilter).length;
-    
-    if (totalProducts > visibleProductsCount) {
-        if (loadMoreContainer) loadMoreContainer.style.display = 'block';
-        if (loadMoreBtn) loadMoreBtn.onclick = showMoreProducts;
-    } else {
-        if (loadMoreContainer) loadMoreContainer.style.display = 'none';
-    }
-}
-
-// عرض المزيد من المنتجات
-function showMoreProducts() {
-    visibleProductsCount += 8;
-    const productsToShow = currentFilter === 'all' 
-        ? allProducts.slice(0, visibleProductsCount)
-        : allProducts.filter(product => product.category === currentFilter).slice(0, visibleProductsCount);
-    
-    displayProducts(productsToShow);
-    setupLoadMoreButton();
 }
 
 // البحث المباشر
@@ -511,6 +498,7 @@ function displaySpecialSection(section) {
 
 // عرض رسالة مؤقتة
 function showTempMessage(text, type) {
+    // إزالة أي رسائل سابقة
     const existingMessages = document.querySelectorAll('.temp-message');
     existingMessages.forEach(msg => msg.remove());
     
@@ -535,7 +523,7 @@ function showTempMessage(text, type) {
 
 // تهيئة الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("تهيئة صفحة المتجر...");
+    console.log("🚀 تهيئة صفحة المتجر...");
     
     // تحميل المنتجات
     loadProducts();
@@ -550,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    console.log("تم تهيئة صفحة المتجر بالكامل");
+    console.log("✅ تم تهيئة صفحة المتجر بالكامل");
 });
 
 // جعل الدوال متاحة globally
