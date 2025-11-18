@@ -1,31 +1,43 @@
-// js/cart.js - الإصدار المصحح بالكامل
+// js/cart.js - الإصدار المصحح النهائي
 console.log("🔄 تحميل نظام سلة التسوق المصحح...");
 
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // إضافة منتج إلى السلة - الإصدار المصحح
 function addToCart(product) {
-    // التأكد من أن السعر والكمية أرقام
-    const price = parseFloat(product.price) || 0;
-    const stock = parseInt(product.stock) || 0;
+    console.log("🛒 محاولة إضافة منتج:", product.name, product);
+    
+    // التأكد من أن البيانات رقمية ولكن دون تغيير النوع الأساسي
+    const price = Number(product.price) || 0;
+    const stock = Number(product.stock) || 0;
     
     const existingItem = cart.find(item => item.id === product.id);
     
     if (existingItem) {
-        const currentQuantity = parseInt(existingItem.quantity) || 0;
+        const currentQuantity = Number(existingItem.quantity) || 0;
+        console.log(`📊 المقارنة: ${currentQuantity} < ${stock} = ${currentQuantity < stock}`);
+        
         if (currentQuantity < stock) {
             existingItem.quantity = currentQuantity + 1;
+            console.log("✅ تم زيادة الكمية");
         } else {
+            console.log("❌ الكمية غير كافية - المنتج موجود بالفعل");
             showTempMessage('الكمية المتاحة غير كافية', 'error');
             return;
         }
     } else {
-        cart.push({
-            ...product,
-            price: price,
-            stock: stock,
-            quantity: 1
-        });
+        // إضافة منتج جديد
+        if (stock > 0) {
+            cart.push({
+                ...product,
+                quantity: 1
+            });
+            console.log("✅ تم إضافة منتج جديد");
+        } else {
+            console.log("❌ المنتج غير متوفر في المخزون");
+            showTempMessage('المنتج غير متوفر', 'error');
+            return;
+        }
     }
     
     saveCart();
@@ -50,9 +62,8 @@ function updateCartDisplay() {
     let itemsHTML = '';
     
     cart.forEach(item => {
-        // التأكد من أن السعر والكمية أرقام
-        const price = parseFloat(item.price) || 0;
-        const quantity = parseInt(item.quantity) || 0;
+        const price = Number(item.price) || 0;
+        const quantity = Number(item.quantity) || 0;
         const itemTotal = price * quantity;
         total += itemTotal;
         
@@ -89,9 +100,11 @@ function updateCartDisplay() {
 function updateQuantity(productId, change) {
     const item = cart.find(item => item.id === productId);
     if (item) {
-        const currentQuantity = parseInt(item.quantity) || 0;
-        const stock = parseInt(item.stock) || 0;
+        const currentQuantity = Number(item.quantity) || 0;
+        const stock = Number(item.stock) || 0;
         const newQuantity = currentQuantity + change;
+        
+        console.log(`🔄 تحديث الكمية: ${currentQuantity} + ${change} = ${newQuantity}, المخزون: ${stock}`);
         
         if (newQuantity < 1) {
             removeFromCart(productId);
@@ -128,7 +141,7 @@ function clearCart() {
     }
 }
 
-// إتمام الشراء - الإصدار المصحح
+// إتمام الشراء
 function checkout() {
     if (cart.length === 0) {
         showTempMessage('سلة التسوق فارغة', 'error');
@@ -141,22 +154,14 @@ function checkout() {
 
 // حفظ السلة في localStorage - الإصدار المصحح
 function saveCart() {
-    // التأكد من أن جميع البيانات رقمية قبل الحفظ
-    const cartToSave = cart.map(item => ({
-        ...item,
-        price: parseFloat(item.price) || 0,
-        quantity: parseInt(item.quantity) || 0,
-        stock: parseInt(item.stock) || 0
-    }));
-    
-    localStorage.setItem('cart', JSON.stringify(cartToSave));
+    localStorage.setItem('cart', JSON.stringify(cart));
 }
 
 // تحديث عداد السلة - الإصدار المصحح
 function updateCartCount() {
     const cartCount = document.querySelector('.cart-count');
     const totalItems = cart.reduce((total, item) => {
-        const quantity = parseInt(item.quantity) || 0;
+        const quantity = Number(item.quantity) || 0;
         return total + quantity;
     }, 0);
     
@@ -215,13 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (savedCart) {
         try {
             cart = JSON.parse(savedCart);
-            // التأكد من أن البيانات رقمية
-            cart = cart.map(item => ({
-                ...item,
-                price: parseFloat(item.price) || 0,
-                quantity: parseInt(item.quantity) || 0,
-                stock: parseInt(item.stock) || 0
-            }));
+            console.log("✅ تم تحميل سلة التسوق:", cart);
         } catch (error) {
             console.error("❌ خطأ في تحميل سلة التسوق:", error);
             cart = [];
@@ -229,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     updateCartCount();
-    console.log("✅ تم تحميل سلة التسوق:", cart);
 });
 
 // جعل الدوال متاحة عالمياً
