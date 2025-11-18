@@ -205,7 +205,7 @@ function createProductCard(product) {
             </div>
             
             <div class="product-actions">
-                <button class="add-to-cart-btn" onclick="addToCart('${product.id}')" ${product.stock <= 0 ? 'disabled' : ''}>
+                <button class="add-to-cart-btn" onclick="addToCartFromProducts('${product.id}')" ${product.stock <= 0 ? 'disabled' : ''}>
                     <i class="fas fa-shopping-cart"></i>
                     أضف إلى السلة
                 </button>
@@ -221,14 +221,62 @@ function createProductCard(product) {
     `;
 }
 
+// إضافة المنتج إلى السلة - الإصدار المصحح
+function addToCartFromProducts(productId) {
+    console.log("🛒 محاولة إضافة منتج إلى السلة:", productId);
+    
+    const product = allProducts.find(p => p.id === productId);
+    if (product) {
+        console.log("✅ المنتج موجود:", product.name, "المخزون:", product.stock);
+        
+        // استخدام المنتج كما هو دون تعديل
+        if (typeof window.addToCart === 'function') {
+            window.addToCart(product);
+        } else {
+            showTempMessage('❌ نظام السلة غير متاح', 'error');
+        }
+    } else {
+        console.log("❌ المنتج غير موجود");
+        showTempMessage('❌ المنتج غير موجود', 'error');
+    }
+}
+
+// شراء سريع
+function buyNow(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (product) {
+        if (typeof window.addToCart === 'function') {
+            window.addToCart(product);
+            // فتح سلة التسوق
+            const cartModal = document.getElementById('cartModal');
+            if (cartModal) {
+                cartModal.style.display = 'block';
+                if (typeof window.updateCartDisplay === 'function') {
+                    window.updateCartDisplay();
+                }
+            }
+        } else {
+            showTempMessage('❌ نظام السلة غير متاح', 'error');
+        }
+    } else {
+        showTempMessage('❌ المنتج غير متوفر', 'error');
+    }
+}
+
 // مشاركة المنتج - الانتقال إلى صفحة المشاركة
 function shareProduct(productId) {
     console.log("📤 مشاركة المنتج:", productId);
     
     const product = allProducts.find(p => p.id === productId);
     if (product) {
-        // الانتقال إلى صفحة مشاركة المنتج
-        window.location.href = `share.html?product=${productId}`;
+        // حفظ المنتج في localStorage للوصول السريع في صفحة المشاركة
+        localStorage.setItem('sharedProduct_' + productId, JSON.stringify(product));
+        
+        // فتح صفحة المشاركة في نافذة جديدة
+        const shareUrl = `share.html?product=${productId}`;
+        window.open(shareUrl, '_blank', 'width=600,height=800');
+        
+        showTempMessage('📤 جاري فتح صفحة المشاركة...', 'success');
     } else {
         showTempMessage('❌ المنتج غير موجود', 'error');
     }
@@ -287,50 +335,6 @@ function generateRatingStars(rating) {
     }
     
     return stars;
-}
-
-// في دالة addToCart في products.js - تحديث الجزء الخاص بإضافة المنتج
-function addToCart(productId) {
-    const product = allProducts.find(p => p.id === productId);
-    if (product && product.stock > 0) {
-        // التأكد من أن السعر رقم صحيح
-        const productWithFixedPrice = {
-            ...product,
-            price: parseFloat(product.price) || 0,
-            stock: parseInt(product.stock) || 0
-        };
-        
-        // استدعاء دالة addToCart من cart.js
-        if (typeof window.addToCart === 'function') {
-            window.addToCart(productWithFixedPrice);
-            showTempMessage('✅ تم إضافة المنتج إلى السلة', 'success');
-        } else {
-            showTempMessage('❌ نظام السلة غير متاح', 'error');
-        }
-    } else {
-        showTempMessage('❌ المنتج غير متوفر', 'error');
-    }
-}
-// شراء سريع
-function buyNow(productId) {
-    const product = allProducts.find(p => p.id === productId);
-    if (product && product.stock > 0) {
-        if (typeof window.addToCart === 'function') {
-            window.addToCart(product);
-            // فتح سلة التسوق
-            const cartModal = document.getElementById('cartModal');
-            if (cartModal) {
-                cartModal.style.display = 'block';
-                if (typeof window.updateCartDisplay === 'function') {
-                    window.updateCartDisplay();
-                }
-            }
-        } else {
-            showTempMessage('❌ نظام السلة غير متاح', 'error');
-        }
-    } else {
-        showTempMessage('❌ المنتج غير متوفر', 'error');
-    }
 }
 
 // إعداد زر "عرض المزيد"
@@ -551,26 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.filterProducts = filterProducts;
 window.searchProducts = searchProducts;
 window.performSearch = performSearch;
-window.addToCart = addToCart;
+window.addToCartFromProducts = addToCartFromProducts;
 window.buyNow = buyNow;
 window.shareProduct = shareProduct;
 window.displaySpecialSection = displaySpecialSection;
-
-// تحسين نظام المشاركة في products.js
-function shareProduct(productId) {
-    console.log("📤 مشاركة المنتج:", productId);
-    
-    const product = allProducts.find(p => p.id === productId);
-    if (product) {
-        // حفظ المنتج في localStorage للوصول السريع في صفحة المشاركة
-        localStorage.setItem('sharedProduct_' + productId, JSON.stringify(product));
-        
-        // فتح صفحة المشاركة في نافذة جديدة
-        const shareUrl = `share.html?product=${productId}`;
-        window.open(shareUrl, '_blank', 'width=600,height=800');
-        
-        showTempMessage('📤 جاري فتح صفحة المشاركة...', 'success');
-    } else {
-        showTempMessage('❌ المنتج غير موجود', 'error');
-    }
-}
