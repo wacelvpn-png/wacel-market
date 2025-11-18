@@ -289,13 +289,20 @@ function generateRatingStars(rating) {
     return stars;
 }
 
-// إضافة المنتج إلى السلة
+// في دالة addToCart في products.js - تحديث الجزء الخاص بإضافة المنتج
 function addToCart(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (product && product.stock > 0) {
+        // التأكد من أن السعر رقم صحيح
+        const productWithFixedPrice = {
+            ...product,
+            price: parseFloat(product.price) || 0,
+            stock: parseInt(product.stock) || 0
+        };
+        
         // استدعاء دالة addToCart من cart.js
         if (typeof window.addToCart === 'function') {
-            window.addToCart(product);
+            window.addToCart(productWithFixedPrice);
             showTempMessage('✅ تم إضافة المنتج إلى السلة', 'success');
         } else {
             showTempMessage('❌ نظام السلة غير متاح', 'error');
@@ -304,7 +311,6 @@ function addToCart(productId) {
         showTempMessage('❌ المنتج غير متوفر', 'error');
     }
 }
-
 // شراء سريع
 function buyNow(productId) {
     const product = allProducts.find(p => p.id === productId);
@@ -568,4 +574,3 @@ function shareProduct(productId) {
         showTempMessage('❌ المنتج غير موجود', 'error');
     }
 }
-
