@@ -437,54 +437,55 @@
             }
         };
 
-        // تحميل المنتج
-        async function loadSharedProduct() {
-            try {
-                if (!productId) {
-                    throw new Error('لم يتم تحديد منتج للمشاركة');
-                }
-                
-                console.log("🔄 جاري تحميل المنتج:", productId);
-                
-                let product = null;
+ // تحميل المنتج - الإصدار المصحح
+async function loadSharedProduct() {
+    try {
+        if (!productId) {
+            throw new Error('لم يتم تحديد منتج للمشاركة');
+        }
+        
+        console.log("🔄 جاري تحميل المنتج:", productId);
+        
+        let product = null;
 
-                // محاولة جلب المنتج من Firebase
-                if (window.firebaseDb && typeof firebaseDb.collection === 'function') {
-                    const doc = await firebaseDb.collection("products").doc(productId).get();
-                    if (doc.exists) {
-                        product = {
-                            id: doc.id,
-                            ...doc.data()
-                        };
-                        console.log("✅ تم تحميل المنتج من Firebase:", product.name);
-                    }
-                }
-
-                // إذا لم يتم العثور على المنتج في Firebase، استخدم البيانات التجريبية
-                if (!product) {
-                    product = sampleProducts[productId];
-                    if (product) {
-                        console.log("📝 استخدام البيانات التجريبية للمنتج:", product.name);
-                    }
-                }
-
-                if (!product) {
-                    throw new Error('المنتج غير موجود');
-                }
-
-                currentProduct = product;
-                
-                // تحديث بيانات التعريف للSEO
-                updateMetaTags(product);
-                
-                // عرض محتوى المشاركة
-                displayShareContent(product);
-
-            } catch (error) {
-                console.error('❌ خطأ في تحميل المنتج:', error);
-                showErrorState(error.message);
+        // محاولة جلب المنتج من Firebase
+        if (window.firebaseDb && typeof firebaseDb.collection === 'function') {
+            const doc = await firebaseDb.collection("products").doc(productId).get();
+            if (doc.exists) {
+                product = {
+                    id: doc.id,
+                    ...doc.data()
+                };
+                console.log("✅ تم تحميل المنتج من Firebase:", product.name);
             }
         }
+
+        // إذا لم يتم العثور على المنتج في Firebase، ابحث في البيانات التجريبية
+        if (!product) {
+            // البحث في المصفوفة sampleProducts عن المنتج الذي له id مطابق
+            product = sampleProducts.find(p => p.id === productId);
+            if (product) {
+                console.log("📝 استخدام البيانات التجريبية للمنتج:", product.name);
+            }
+        }
+
+        if (!product) {
+            throw new Error('المنتج غير موجود');
+        }
+
+        currentProduct = product;
+        
+        // تحديث بيانات التعريف للSEO
+        updateMetaTags(product);
+        
+        // عرض محتوى المشاركة
+        displayShareContent(product);
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل المنتج:', error);
+        showErrorState(error.message);
+    }
+}
 
         // تحديث بيانات التعريف
         function updateMetaTags(product) {
