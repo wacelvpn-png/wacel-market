@@ -1,4 +1,18 @@
-:root {
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wacel play-وسـيـل بلاي</title>
+    <meta name="google-site-verification" content="yv8Fapy9yxl2XxCh03uMYT4h-T8OShA4EnsGmg_Hbh0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <style>
+        
+        /* جميع أنماط CSS من الملفات السابقة */
+        :root {
     --primary: #4361ee;
     --primary-dark: #3a56d4;
     --primary-light: #e6ebff;
@@ -22,6 +36,8 @@
     --gradient-secondary: linear-gradient(135deg, #ff6b6b, #ff5252);
     --gradient-accent: linear-gradient(135deg, #06d6a0, #05c793);
 }
+
+/* ... باقي الكود ... */
 
 * {
     margin: 0;
@@ -61,7 +77,7 @@ body {
 }
 
 .logo {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
     font-weight: 800;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
@@ -69,6 +85,8 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    
+    flex: 0;
 }
 
 .logo i {
@@ -382,21 +400,35 @@ body {
 }
 
 .app-card {
-    background: var(--bg-card);
-    border-radius: var(--radius);
-    box-shadow: 0 5px 30px rgba(0,0,0,0.9);
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-    border-bottom: 9px groove #000;
-    border-top: 6px ridge #000;
-    border-left: 0px ridge #fff;
-    border-right: 0px ridge #fff;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: 0 5px 30px rgba(0,0,0,1.9);
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+            border-bottom: 9px groove #000;
+            border-top: 6px ridge #000;
+            border-left: 0px ridge #fff;
+            border-right: 0px ridge #fff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
 
 .app-card::before {
     content: '';
@@ -1343,21 +1375,25 @@ body {
 .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: 0.5rem;
 }
 
 .product-card {
     background: var(--bg-card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-    border: 1px solid var(--border-light);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+            border-radius: var(--radius);
+            box-shadow: 0 5px 30px rgba(0,0,0,1.9);
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+            border-bottom: 9px groove #000;
+            border-top: 6px ridge #000;
+            border-left: 0px ridge #fff;
+            border-right: 0px ridge #fff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
 }
 
 .product-image-container {
@@ -1401,7 +1437,7 @@ body {
 }
 
 .product-info {
-    flex: 1;
+    flex: 0;
 }
 
 .product-name {
@@ -1459,18 +1495,21 @@ body {
 }
 
 .add-to-cart-btn, .buy-now-btn {
-    flex: 0;
-    padding: 0.8rem;
     border: none;
-    border-radius: 8px;
+    padding: 0.1rem;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
+    flex: 0.1;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.3rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    box-shadow: var(--shadow);
+    min-height: 32px;
+    line-height: 1;
 }
 
 .add-to-cart-btn {
@@ -1496,8 +1535,6 @@ body {
 }
 
 .share-btn {
-    background: #00CB1C;
-    color: white;
     border: none;
     padding: 0.1rem;
     border-radius: 6px;
@@ -1671,7 +1708,7 @@ body {
 }
 
 .btn-checkout, .btn-clear-cart {
-    flex: 1;
+    flex: 0;
     padding: 1rem;
     border: none;
     border-radius: 12px;
@@ -1735,213 +1772,4 @@ body {
         flex-direction: column;
     }
 }
-
-
-
-/* أنماط مشاركة المنتج */
-.share-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 0.8rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-}
-
-.share-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* رسائل المشاركة */
-.temp-message {
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    padding: 1rem 1.5rem;
-    border-radius: 10px;
-    box-shadow: var(--shadow-lg);
-    z-index: 3000;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-    animation: slideIn 0.3s ease-out;
-}
-
-.temp-message.success {
-    background: #10b981;
-    color: white;
-}
-
-.temp-message.error {
-    background: #ef4444;
-    color: white;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOut {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-
-/* تحسينات للشاشات الصغيرة */
-@media (max-width: 768px) {
-    .share-btn {
-        padding: 0.6rem;
-        font-size: 0.9rem;
-    }
     
-    .temp-message {
-        right: 10px;
-        left: 10px;
-        top: 80px;
-    }
-}
-/* أنماط مشاركة المنتج */
-.share-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 0.8rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-}
-
-.share-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* رسائل المشاركة */
-.temp-message {
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    padding: 1rem 1.5rem;
-    border-radius: 10px;
-    box-shadow: var(--shadow-lg);
-    z-index: 3000;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-    animation: slideIn 0.3s ease-out;
-}
-
-.temp-message.success {
-    background: #10b981;
-    color: white;
-}
-
-.temp-message.error {
-    background: #ef4444;
-    color: white;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOut {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-
-/* تحسينات للشاشات الصغيرة */
-@media (max-width: 768px) {
-    .share-btn {
-        padding: 0.6rem;
-        font-size: 0.9rem;
-    }
-    
-    .temp-message {
-        right: 10px;
-        left: 10px;
-        top: 80px;
-    }
-}
-
-/* تأثيرات تحميل */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.product-card {
-    animation: fadeInUp 0.6s ease-out;
-}
-
-/* تأثيرات التمرير */
-.category-filter {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.category-filter:hover {
-    transform: scale(1.05);
-}
-
-/* تحسينات الاستجابة */
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2.2rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.1rem;
-    }
-    
-    .product-card:hover {
-        transform: translateY(-5px);
-    }
-}
-
