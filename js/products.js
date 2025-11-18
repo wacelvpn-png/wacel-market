@@ -549,3 +549,23 @@ window.addToCart = addToCart;
 window.buyNow = buyNow;
 window.shareProduct = shareProduct;
 window.displaySpecialSection = displaySpecialSection;
+
+// تحسين نظام المشاركة في products.js
+function shareProduct(productId) {
+    console.log("📤 مشاركة المنتج:", productId);
+    
+    const product = allProducts.find(p => p.id === productId);
+    if (product) {
+        // حفظ المنتج في localStorage للوصول السريع في صفحة المشاركة
+        localStorage.setItem('sharedProduct_' + productId, JSON.stringify(product));
+        
+        // فتح صفحة المشاركة في نافذة جديدة
+        const shareUrl = `share.html?product=${productId}`;
+        window.open(shareUrl, '_blank', 'width=600,height=800');
+        
+        showTempMessage('📤 جاري فتح صفحة المشاركة...', 'success');
+    } else {
+        showTempMessage('❌ المنتج غير موجود', 'error');
+    }
+}
+
