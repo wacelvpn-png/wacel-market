@@ -123,19 +123,77 @@
         }
         
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e2e8f0;
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s ease;
+            font-family: inherit;
         }
         
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: #3b82f6;
+        }
+        
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .payment-method {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .payment-method:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+        
+        .payment-method.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .payment-method-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .payment-method-icon {
+            font-size: 1.5rem;
+            color: #6366f1;
+        }
+        
+        .payment-details {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .account-number {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-weight: bold;
+            margin: 5px 0;
+            direction: ltr;
+            text-align: center;
         }
         
         .order-summary {
@@ -216,6 +274,26 @@
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
         }
         
+        .temp-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            border-left: 4px solid #10b981;
+        }
+        
+        .temp-message.error {
+            border-left-color: #ef4444;
+        }
+        
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -232,6 +310,10 @@
             
             .checkout-steps::before {
                 display: none;
+            }
+            
+            .payment-methods {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -293,42 +375,88 @@
                 <div class="form-section">
                     <h3><i class="fas fa-map-marker-alt"></i> عنوان التوصيل</h3>
                     <div class="form-group">
-                        <label for="city">المدينة *</label>
+                        <label for="city">المحافظة *</label>
                         <select id="city" required>
-                            <option value="">اختر المدينة</option>
-                            <option value="riyadh">الرياض</option>
-                            <option value="jeddah">جدة</option>
-                            <option value="dammam">الدمام</option>
-                            <option value="mecca">مكة المكرمة</option>
-                            <option value="medina">المدينة المنورة</option>
+                            <option value="">اختر المحافظة</option>
+                            <option value="sanaa">أمانة العاصمة - صنعاء</option>
+                            <option value="aden">عدن</option>
+                            <option value="taiz">تعز</option>
+                            <option value="hodeidah">الحديدة</option>
+                            <option value="ibb">إب</option>
+                            <option value="dhamar">ذمار</option>
+                            <option value="hajjah">حجة</option>
+                            <option value="amran">عمران</option>
+                            <option value="sadah">صعدة</option>
+                            <option value="hadramout">حضرموت</option>
+                            <option value="shabwa">شبوة</option>
+                            <option value="mahwit">المحويت</option>
+                            <option value="mahrah">المهرة</option>
+                            <option value="raymah">الريمة</option>
+                            <option value="dhale">الضالع</option>
+                            <option value="abyan">أبين</option>
+                            <option value="lahj">لحج</option>
+                            <option value="marib">مأرب</option>
+                            <option value="aljawf">الجوف</option>
+                            <option value="albaidha">البيضاء</option>
+                            <option value="socotra">أرخبيل سقطرى</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="address">العنوان التفصيلي *</label>
-                        <textarea id="address" rows="3" required style="width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+                        <textarea id="address" rows="3" required placeholder="الحي، الشارع، رقم المنزل، أقرب معلم..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">ملاحظات إضافية (اختياري)</label>
+                        <textarea id="notes" rows="2" placeholder="ملاحظات حول التوصيل أو الطلب..."></textarea>
                     </div>
                 </div>
                 
                 <div class="form-section">
                     <h3><i class="fas fa-credit-card"></i> طريقة الدفع</h3>
-                    <div class="form-group">
-                        <label>
-                            <input type="radio" name="payment" value="card" checked> 
-                            💳 الدفع بالبطاقة الإئتمانية
-                        </label>
+                    <p style="margin-bottom: 15px; color: #64748b;">يرجى اختيار طريقة الدفع المناسبة لك</p>
+                    
+                    <div class="payment-methods">
+                        <!-- البنك الكريمي -->
+                        <div class="payment-method" data-method="karmani_bank">
+                            <div class="payment-method-header">
+                                <i class="fas fa-university payment-method-icon"></i>
+                                <h4>البنك الكريمي</h4>
+                            </div>
+                            <p>الدفع عبر التحويل البنكي</p>
+                            <div class="payment-details">
+                                <div class="account-number">الريال اليمني: 3016518149</div>
+                                <div class="account-number">الريال السعودي: 3026839741</div>
+                                <div class="account-number">الدولار الأمريكي: 3122165352</div>
+                            </div>
+                        </div>
+                        
+                        <!-- محافظ إلكترونية -->
+                        <div class="payment-method" data-method="ewallet">
+                            <div class="payment-method-header">
+                                <i class="fas fa-mobile-alt payment-method-icon"></i>
+                                <h4>المحافظ الإلكترونية</h4>
+                            </div>
+                            <p>الدفع عبر المحافظ الإلكترونية</p>
+                            <div class="payment-details">
+                                <div><strong>ون كاش / جيب / جوال</strong></div>
+                                <div class="account-number">735981122</div>
+                            </div>
+                        </div>
+                        
+                        <!-- الدفع عند الاستلام -->
+                        <div class="payment-method" data-method="cash">
+                            <div class="payment-method-header">
+                                <i class="fas fa-money-bill-wave payment-method-icon"></i>
+                                <h4>الدفع عند الاستلام</h4>
+                            </div>
+                            <p>ادفع نقداً عند استلام الطلب</p>
+                            <div class="payment-details">
+                                <p>سيتم الاتصال بك لتأكيد العنوان وتحديد موعد التسليم</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="radio" name="payment" value="applepay"> 
-                            📱 Apple Pay
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="radio" name="payment" value="cash"> 
-                            💵 الدفع نقداً عند الاستلام
-                        </label>
-                    </div>
+                    
+                    <input type="hidden" id="selectedPaymentMethod" name="paymentMethod" required>
                 </div>
                 
                 <div class="order-summary">
@@ -349,7 +477,7 @@
                     </button>
                     <button type="submit" class="btn-confirm">
                         <i class="fas fa-lock"></i>
-                        تأكيد الطلب والدفع
+                        تأكيد الطلب وإرسال بيانات الدفع
                     </button>
                 </div>
             </form>
@@ -380,7 +508,7 @@
                     <div class="order-item">
                         <div>
                             <strong>${item.name}</strong>
-                            <div>الكمية: ${item.quantity}</div>
+                            <div>الكمية: ${item.quantity} × ${item.price} ر.س</div>
                         </div>
                         <div>${itemTotal.toFixed(2)} ر.س</div>
                     </div>
@@ -396,6 +524,102 @@
             window.location.href = 'index.html';
         }
         
+        // إدارة اختيار طريقة الدفع
+        function setupPaymentMethods() {
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            const selectedMethodInput = document.getElementById('selectedPaymentMethod');
+            
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    // إزالة التحديد من جميع الطرق
+                    paymentMethods.forEach(m => m.classList.remove('selected'));
+                    
+                    // تحديد الطريقة المختارة
+                    this.classList.add('selected');
+                    selectedMethodInput.value = this.dataset.method;
+                });
+            });
+            
+            // تحديد طريقة افتراضية
+            if (paymentMethods.length > 0) {
+                paymentMethods[0].click();
+            }
+        }
+        
+        // إنشاء رسالة واتساب
+        function createWhatsAppMessage(formData, cart) {
+            let message = `🛒 طلب جديد من وسيل ماركت\n\n`;
+            message += `👤 معلومات العميل:\n`;
+            message += `الاسم: ${formData.fullName}\n`;
+            message += `الجوال: ${formData.phone}\n`;
+            message += `${formData.email ? `البريد: ${formData.email}\n` : ''}`;
+            message += `\n📍 عنوان التوصيل:\n`;
+            message += `المحافظة: ${formData.city}\n`;
+            message += `العنوان: ${formData.address}\n`;
+            message += `${formData.notes ? `ملاحظات: ${formData.notes}\n` : ''}`;
+            
+            message += `\n💳 طريقة الدفع:\n`;
+            if (formData.paymentMethod === 'karmani_bank') {
+                message += `البنك الكريمي\n`;
+                message += `يرجى التحويل إلى أحد الحسابات:\n`;
+                message += `- الريال اليمني: 3016518149\n`;
+                message += `- الريال السعودي: 3026839741\n`;
+                message += `- الدولار الأمريكي: 3122165352\n`;
+            } else if (formData.paymentMethod === 'ewallet') {
+                message += `المحافظ الإلكترونية\n`;
+                message += `الرقم: 735981122\n`;
+            } else {
+                message += `الدفع عند الاستلام\n`;
+            }
+            
+            message += `\n🛍️ المنتجات:\n`;
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                message += `- ${item.name} (${item.quantity} × ${item.price}) = ${itemTotal.toFixed(2)} ر.س\n`;
+            });
+            
+            message += `\n💰 المجموع الكلي: ${total.toFixed(2)} ر.س\n\n`;
+            message += `⏰ وقت الطلب: ${new Date().toLocaleString('ar-YE')}\n`;
+            message += `🆔 رقم الطلب: #${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+            
+            return encodeURIComponent(message);
+        }
+        
+        // إرسال رسالة واتساب
+        function sendWhatsAppMessage(message) {
+            const phoneNumber = '+967735981122';
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+            window.open(whatsappUrl, '_blank');
+        }
+        
+        // عرض رسالة مؤقتة
+        function showTempMessage(text, type) {
+            // إزالة أي رسائل سابقة
+            const existingMessages = document.querySelectorAll('.temp-message');
+            existingMessages.forEach(msg => msg.remove());
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `temp-message ${type === 'error' ? 'error' : ''}`;
+            messageDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i>
+                <span>${text}</span>
+            `;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.style.opacity = '0';
+                messageDiv.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
         // معالجة نموذج الدفع
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -406,26 +630,45 @@
                 email: document.getElementById('email').value,
                 city: document.getElementById('city').value,
                 address: document.getElementById('address').value,
-                payment: document.querySelector('input[name="payment"]:checked').value
+                notes: document.getElementById('notes').value,
+                paymentMethod: document.getElementById('selectedPaymentMethod').value
             };
             
-            // هنا يمكنك إضافة منطق إرسال البيانات إلى الخادم
+            // التحقق من اختيار طريقة الدفع
+            if (!formData.paymentMethod) {
+                showTempMessage('❌ يرجى اختيار طريقة الدفع', 'error');
+                return;
+            }
+            
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            
+            if (cart.length === 0) {
+                showTempMessage('❌ سلة التسوق فارغة', 'error');
+                return;
+            }
+            
             console.log('بيانات الطلب:', formData);
             
-            // عرض رسالة نجاح
-            alert('✅ تم تأكيد طلبك بنجاح! رقم الطلب: #' + Math.random().toString(36).substr(2, 9).toUpperCase());
+            // إنشاء رسالة واتساب
+            const whatsappMessage = createWhatsAppMessage(formData, cart);
             
-            // تفريغ السلة
-            localStorage.removeItem('cart');
+            // إرسال رسالة واتساب
+            sendWhatsAppMessage(whatsappMessage);
             
-            // التوجيه إلى الصفحة الرئيسية
+            showTempMessage('✅ تم إنشاء الطلب بنجاح! جاري فتح واتساب...', 'success');
+            
+            // تفريغ السلة بعد تأخير
             setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 2000);
+                localStorage.removeItem('cart');
+                showTempMessage('✅ تم تفريغ سلة التسوق', 'success');
+            }, 3000);
         });
         
         // تحميل العناصر عند فتح الصفحة
-        document.addEventListener('DOMContentLoaded', loadCartItems);
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCartItems();
+            setupPaymentMethods();
+        });
     </script>
 </body>
 </html>
