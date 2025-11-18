@@ -5,16 +5,22 @@ let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // إضافة منتج إلى السلة - الإصدار المصحح
 function addToCart(product) {
-    console.log("🛒 محاولة إضافة منتج:", product.name, product);
+    console.log("🛒 محاولة إضافة منتج:", product);
     
-    // التأكد من أن البيانات رقمية ولكن دون تغيير النوع الأساسي
-    const price = Number(product.price) || 0;
-    const stock = Number(product.stock) || 0;
+    if (!product || !product.id) {
+        console.error("❌ منتج غير صالح:", product);
+        showTempMessage('❌ خطأ في إضافة المنتج', 'error');
+        return;
+    }
+    
+    // التأكد من أن البيانات رقمية
+    const price = parseFloat(product.price) || 0;
+    const stock = parseInt(product.stock) || 0;
     
     const existingItem = cart.find(item => item.id === product.id);
     
     if (existingItem) {
-        const currentQuantity = Number(existingItem.quantity) || 0;
+        const currentQuantity = parseInt(existingItem.quantity) || 0;
         console.log(`📊 المقارنة: ${currentQuantity} < ${stock} = ${currentQuantity < stock}`);
         
         if (currentQuantity < stock) {
@@ -29,7 +35,21 @@ function addToCart(product) {
         // إضافة منتج جديد
         if (stock > 0) {
             cart.push({
-                ...product,
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                price: price,
+                originalPrice: parseFloat(product.originalPrice) || 0,
+                category: product.category,
+                images: product.images || [],
+                stock: stock,
+                rating: parseFloat(product.rating) || 0,
+                sales: parseInt(product.sales) || 0,
+                featured: product.featured || false,
+                trending: product.trending || false,
+                discount: parseInt(product.discount) || 0,
+                brand: product.brand || '',
+                specifications: product.specifications || {},
                 quantity: 1
             });
             console.log("✅ تم إضافة منتج جديد");
@@ -62,8 +82,8 @@ function updateCartDisplay() {
     let itemsHTML = '';
     
     cart.forEach(item => {
-        const price = Number(item.price) || 0;
-        const quantity = Number(item.quantity) || 0;
+        const price = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
         const itemTotal = price * quantity;
         total += itemTotal;
         
@@ -100,8 +120,8 @@ function updateCartDisplay() {
 function updateQuantity(productId, change) {
     const item = cart.find(item => item.id === productId);
     if (item) {
-        const currentQuantity = Number(item.quantity) || 0;
-        const stock = Number(item.stock) || 0;
+        const currentQuantity = parseInt(item.quantity) || 0;
+        const stock = parseInt(item.stock) || 0;
         const newQuantity = currentQuantity + change;
         
         console.log(`🔄 تحديث الكمية: ${currentQuantity} + ${change} = ${newQuantity}, المخزون: ${stock}`);
@@ -152,7 +172,7 @@ function checkout() {
     window.location.href = 'checkout.html';
 }
 
-// حفظ السلة في localStorage - الإصدار المصحح
+// حفظ السلة في localStorage
 function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
@@ -161,7 +181,7 @@ function saveCart() {
 function updateCartCount() {
     const cartCount = document.querySelector('.cart-count');
     const totalItems = cart.reduce((total, item) => {
-        const quantity = Number(item.quantity) || 0;
+        const quantity = parseInt(item.quantity) || 0;
         return total + quantity;
     }, 0);
     
