@@ -1,5 +1,5 @@
-// js/products.js - الإصدار المحدث مع نظام المشاركة
-console.log("🔄 تحميل متجر المنتجات مع نظام المشاركة...");
+// js/products.js - الإصدار المصحح بالكامل
+console.log("🔄 تحميل متجر المنتجات المصحح...");
 
 let allProducts = [];
 let currentFilter = 'all';
@@ -88,6 +88,16 @@ async function loadProducts() {
             console.log("💾 استخدام البيانات التجريبية (Firebase غير متوفر):", allProducts.length);
         }
         
+        // التأكد من أن جميع البيانات رقمية
+        allProducts = allProducts.map(product => ({
+            ...product,
+            price: parseFloat(product.price) || 0,
+            stock: parseInt(product.stock) || 0,
+            sales: parseInt(product.sales) || 0,
+            rating: parseFloat(product.rating) || 0,
+            discount: parseInt(product.discount) || 0
+        }));
+        
         // الترتيب: المميزة أولاً، ثم الأكثر مبيعاً، ثم المحدثة حديثاً
         allProducts.sort((a, b) => {
             if (a.featured && !b.featured) return -1;
@@ -107,7 +117,15 @@ async function loadProducts() {
     } catch (error) {
         console.error("❌ خطأ في تحميل المنتجات:", error);
         
-        allProducts = sampleProducts;
+        allProducts = sampleProducts.map(product => ({
+            ...product,
+            price: parseFloat(product.price) || 0,
+            stock: parseInt(product.stock) || 0,
+            sales: parseInt(product.sales) || 0,
+            rating: parseFloat(product.rating) || 0,
+            discount: parseInt(product.discount) || 0
+        }));
+        
         displayProducts(allProducts.slice(0, visibleProductsCount));
         setupLoadMoreButton();
         
@@ -161,6 +179,9 @@ function createProductCard(product) {
         ? `<img src="${product.images[0]}" alt="${product.name}" class="product-image" onerror="this.style.display='none'; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>'">`
         : `<i class="${iconClass}"></i>`;
     
+    // استخدام JSON.stringify لتمرير كائن المنتج كاملاً
+    const productData = JSON.stringify(product).replace(/'/g, "\\'");
+    
     return `
         <div class="product-card" data-category="${product.category}" data-id="${product.id}">
             <div class="product-image-container">
@@ -205,11 +226,11 @@ function createProductCard(product) {
             </div>
             
             <div class="product-actions">
-                <button class="add-to-cart-btn" onclick="addToCartFromProducts('${product.id}')" ${product.stock <= 0 ? 'disabled' : ''}>
+                <button class="add-to-cart-btn" onclick="addToCartFromPage('${product.id}')" ${product.stock <= 0 ? 'disabled' : ''}>
                     <i class="fas fa-shopping-cart"></i>
                     أضف إلى السلة
                 </button>
-                <button class="buy-now-btn" onclick="buyNow('${product.id}')" ${product.stock <= 0 ? 'disabled' : ''}>
+                <button class="buy-now-btn" onclick="buyNowFromPage('${product.id}')" ${product.stock <= 0 ? 'disabled' : ''}>
                     <i class="fas fa-bolt"></i>
                     شراء سريع
                 </button>
@@ -221,32 +242,48 @@ function createProductCard(product) {
     `;
 }
 
-// إضافة المنتج إلى السلة - الإصدار المصحح
-function addToCartFromProducts(productId) {
+// إضافة المنتج إلى السلة من صفحة المنتجات
+function addToCartFromPage(productId) {
     console.log("🛒 محاولة إضافة منتج إلى السلة:", productId);
     
     const product = allProducts.find(p => p.id === productId);
     if (product) {
-        console.log("✅ المنتج موجود:", product.name, "المخزون:", product.stock);
+        console.log("✅ المنتج موجود:", product);
         
-        // استخدام المنتج كما هو دون تعديل
+        // التأكد من أن البيانات رقمية
+        const productWithNumbers = {
+            ...product,
+            price: parseFloat(product.price) || 0,
+            stock: parseInt(product.stock) || 0,
+            quantity: 1
+        };
+        
         if (typeof window.addToCart === 'function') {
-            window.addToCart(product);
+            window.addToCart(productWithNumbers);
         } else {
+            console.error("❌ دالة addToCart غير متاحة");
             showTempMessage('❌ نظام السلة غير متاح', 'error');
         }
     } else {
-        console.log("❌ المنتج غير موجود");
+        console.error("❌ المنتج غير موجود:", productId);
         showTempMessage('❌ المنتج غير موجود', 'error');
     }
 }
 
-// شراء سريع
-function buyNow(productId) {
+// شراء سريع من صفحة المنتجات
+function buyNowFromPage(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (product) {
+        // التأكد من أن البيانات رقمية
+        const productWithNumbers = {
+            ...product,
+            price: parseFloat(product.price) || 0,
+            stock: parseInt(product.stock) || 0,
+            quantity: 1
+        };
+        
         if (typeof window.addToCart === 'function') {
-            window.addToCart(product);
+            window.addToCart(productWithNumbers);
             // فتح سلة التسوق
             const cartModal = document.getElementById('cartModal');
             if (cartModal) {
@@ -263,7 +300,7 @@ function buyNow(productId) {
     }
 }
 
-// مشاركة المنتج - الانتقال إلى صفحة المشاركة
+// مشاركة المنتج
 function shareProduct(productId) {
     console.log("📤 مشاركة المنتج:", productId);
     
@@ -555,7 +592,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.filterProducts = filterProducts;
 window.searchProducts = searchProducts;
 window.performSearch = performSearch;
-window.addToCartFromProducts = addToCartFromProducts;
-window.buyNow = buyNow;
+window.addToCartFromPage = addToCartFromPage;
+window.buyNowFromPage = buyNowFromPage;
 window.shareProduct = shareProduct;
 window.displaySpecialSection = displaySpecialSection;
