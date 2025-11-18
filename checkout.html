@@ -607,14 +607,21 @@
             message += `⏰ وقت الطلب: ${new Date().toLocaleString('ar-YE')}\n`;
             message += `🆔 رقم الطلب: #${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
             
-            return encodeURIComponent(message);
+            return message;
         }
         
-        // إرسال رسالة واتساب
+        // إرسال رسالة واتساب مباشرة إلى الرقم المحدد
         function sendWhatsAppMessage(message) {
             const phoneNumber = '+967735981122';
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-            window.open(whatsappUrl, '_blank');
+            // تنظيف الرقم من أي رموز غير ضرورية
+            const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
+            const whatsappUrl = `https://wa.me/${cleanPhoneNumber}?text=${encodeURIComponent(message)}`;
+            
+            // فتح واتساب في نافذة جديدة
+            window.open(whatsappUrl, '_blank', 'width=600,height=700');
+            
+            // بديل: فتح واتساب في نفس النافذة
+            // window.location.href = whatsappUrl;
         }
         
         // الحصول على رابط المنتج من السلة
@@ -694,7 +701,7 @@
             // إنشاء رسالة واتساب
             const whatsappMessage = createWhatsAppMessage(formData, cart);
             
-            // إرسال رسالة واتساب
+            // إرسال رسالة واتساب مباشرة إلى الرقم المحدد
             sendWhatsAppMessage(whatsappMessage);
             
             showTempMessage('✅ تم إنشاء الطلب بنجاح! جاري فتح واتساب...', 'success');
